@@ -40,7 +40,7 @@ $post_data = array(
     'post_content' => $_POST['post_content'],
     'author' => (is_user_logged_in()) ? get_current_user_id() : 0,
     'post_type' => 'mytory_board_post',
-    'post_status' => 'publish',
+    'post_status' => $_POST['post_status'],
     'ping_status' => false,
 );
 

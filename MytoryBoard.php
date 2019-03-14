@@ -11,7 +11,7 @@
  */
 class MytoryBoard
 {
-    public $defaultBoardId = 3; // set yours.
+    public $defaultBoardId = 58; // set yours.
     public $canAnonymousWriting = true;
     public $canSetNameByPost = true;
 
@@ -19,10 +19,12 @@ class MytoryBoard
     {
         add_action('init', array($this, 'registerMytoryBoardPost'));
         add_action('init', array($this, 'registerMytoryBoard'));
+        register_activation_hook(__FILE__, [$this, 'flushRewriteRules']);
         register_activation_hook(__FILE__, array($this, 'addRole'));
         register_deactivation_hook(__FILE__, array($this, 'removeRole'));
+        register_deactivation_hook(__FILE__, 'flush_rewrite_rules');
         add_action('wp_enqueue_scripts', array($this, 'scripts'));
-        add_action('save_post', array($this, 'save'), 10, 3);
+        add_action('save_post_mytory_board_post', array($this, 'savePost'), 10, 3);
         add_action('wp_head', array($this, 'globalJsVariable'));
         add_action('wp_ajax_increase_pageview', array($this, 'increasePageview'));
         add_action('wp_ajax_nopriv_increase_pageview', array($this, 'increasePageview'));
@@ -113,6 +115,13 @@ class MytoryBoard
         remove_role('board_writer');
     }
 
+    function flushRewriteRules()
+    {
+        $this->registerMytoryBoard();
+        $this->registerMytoryBoardPost();
+        flush_rewrite_rules();
+    }
+
     function defaultMytoryBoard($post_id)
     {
         if (!has_term('', 'mytory_board', $post_id)) {
@@ -130,14 +139,15 @@ class MytoryBoard
         }
     }
 
-    function save($post_id, $post, $is_update)
+    function savePost($post_id, $post, $is_update)
     {
-        if ($post->post_type == 'mytory_board_post') {
-            remove_action('save_post', array($this, 'save'));
-            $post->post_name = $post->ID;
-            wp_update_post((array)$post);
-            add_action('save_post', array($this, 'save'), 10, 3);
+        remove_action('save_post_mytory_board_post', array($this, 'savePost'));
+        $post->post_name = $post->ID;
+        wp_update_post((array)$post);
+        add_action('save_post_mytory_board_post', array($this, 'savePost'), 10, 3);
 
+        foreach ($_POST['meta'] as $k => $v) {
+            update_post_meta($post_id, "mytory_board_{$k}", $v);
         }
     }
 
