@@ -19,6 +19,7 @@ class MytoryBoard
     {
         add_action('init', array($this, 'registerMytoryBoardPost'));
         add_action('init', array($this, 'registerMytoryBoard'));
+        add_action('admin_menu', [$this, 'addSubMenu']);
         register_activation_hook(__FILE__, [$this, 'flushRewriteRules']);
         register_activation_hook(__FILE__, array($this, 'addRole'));
         register_deactivation_hook(__FILE__, array($this, 'removeRole'));
@@ -96,6 +97,33 @@ class MytoryBoard
         );
 
         register_taxonomy('mytory_board', 'mytory_board_post', $args);
+    }
+
+    function addSubMenu()
+    {
+        $wp_term_query = new WP_Term_Query([
+            'taxonomy' => 'mytory_board',
+            'hide_empty' => false,
+        ]);
+
+	    foreach ( $wp_term_query->terms as $term ) {
+		    add_submenu_page(
+			    'edit.php?post_type=mytory_board_post',
+                "{$term->name} 게시판",
+                "{$term->name} 게시판",
+                'edit_others_posts',
+                'mytory_board_' . $term->term_id,
+                function () use ($term) {
+			        $url = '/wp-admin/edit.php?post_type=mytory_board_post&mytory_board=' . $term->slug;
+			        var_dump($term);
+			        ?>
+                    <meta http-equiv="refresh" content="0;url=<?= $url ?>" />
+                    <?php
+                }
+            );
+        }
+
+
     }
 
     function addRole()
