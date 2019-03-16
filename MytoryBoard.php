@@ -174,7 +174,13 @@ class MytoryBoard
         add_action('save_post_mytory_board_post', array($this, 'savePost'), 10, 3);
 
         foreach ($_POST['meta'] as $k => $v) {
-            update_post_meta($post_id, "mytory_board_{$k}", $v);
+
+            if (mb_strcut($k, 0, 13, 'utf-8') === 'mytory_board_') {
+	            update_post_meta($post_id, $k, $v);
+            } else {
+	            update_post_meta($post_id, "mytory_board_{$k}", $v);
+            }
+
         }
     }
 
