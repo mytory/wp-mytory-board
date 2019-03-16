@@ -115,7 +115,6 @@ class MytoryBoard
                 'mytory_board_' . $term->term_id,
                 function () use ($term) {
 			        $url = '/wp-admin/edit.php?post_type=mytory_board_post&mytory_board=' . $term->slug;
-			        var_dump($term);
 			        ?>
                     <meta http-equiv="refresh" content="0;url=<?= $url ?>" />
                     <?php
