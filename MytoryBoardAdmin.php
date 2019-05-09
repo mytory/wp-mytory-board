@@ -16,10 +16,16 @@ class MytoryBoardAdmin
         add_action('admin_init', array($this, 'options'));
     }
 
-    function addMenuPage()
-    {
-        add_menu_page('고정글', '고정글', 'edit_others_posts', 'mytory-board-sticky-posts', array($this, 'stickyPosts'), '', 6);
-    }
+	function addMenuPage() {
+		add_submenu_page(
+			'edit.php?post_type=mytory_board_post',
+			'고정글',
+			'고정글',
+			'edit_others_posts',
+			'mytory-board-sticky-posts',
+			array( $this, 'stickyPosts' )
+		);
+	}
 
     function adminScripts()
     {
