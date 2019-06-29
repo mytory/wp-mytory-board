@@ -40,7 +40,7 @@
             $sticky_post_ids = get_option('sticky_posts');
             if ( ! empty($sticky_post_ids)) {
                 global $wp_query;
-                $wp_query = new WP_Query(array(
+                $wp_query = new \WP_Query(array(
                     'post__in'       => get_option('sticky_posts'),
                     'post_type'      => 'any',
                     'posts_per_page' => -1,

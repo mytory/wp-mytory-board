@@ -1,6 +1,12 @@
 <?php
-if ( ! function_exists('http_response_code')) {
-    function http_response_code($code = null)
+
+
+namespace Mytory\Board;
+
+
+class Helper
+{
+    static public function httpResponseCode($code = null)
     {
 
         if ($code !== null) {
@@ -137,4 +143,5 @@ if ( ! function_exists('http_response_code')) {
         return $code;
 
     }
+
 }

@@ -13,78 +13,73 @@ namespace Mytory\Board;
  */
 class MytoryBoard
 {
-    public $defaultBoardId = 58; // set yours.
+    /**
+     * 게시판을 설정하지 않고 글을 썼을 때 기본으로 설정할 게시판이 있는지
+     * @var null
+     */
+    public $defaultBoardId = null;
+
+    /**
+     * 로그인 안 한 사람이 글을 쓸 수 있는지
+     * @var bool
+     */
     public $canAnonymousWriting = true;
+
+    /**
+     * 글별로 이름을 따로 설정할 수 있는지
+     * @var bool
+     */
     public $canSetNameByPost = true;
 
-    function __construct()
+    function __construct($config = [])
     {
+        $this->setConfig($config);
+
         add_action('init', array($this, 'registerMytoryBoardPost'));
         add_action('init', array($this, 'registerMytoryBoard'));
         add_action('admin_menu', [$this, 'addSubMenu']);
-        register_activation_hook(__FILE__, [$this, 'flushRewriteRules']);
-        register_activation_hook(__FILE__, array($this, 'addRole'));
-        register_deactivation_hook(__FILE__, array($this, 'removeRole'));
-        register_deactivation_hook(__FILE__, 'flush_rewrite_rules');
         add_action('wp_enqueue_scripts', array($this, 'scripts'));
         add_action('save_post_mytory_board_post', array($this, 'savePost'), 10, 3);
         add_action('wp_head', array($this, 'globalJsVariable'));
         add_action('wp_ajax_increase_pageview', array($this, 'increasePageview'));
         add_action('wp_ajax_nopriv_increase_pageview', array($this, 'increasePageview'));
-        if ($this->defaultBoardId) {
-            add_action('publish_mytory_board_post', array($this, 'defaultMytoryBoard'));
-        }
+        add_action('publish_mytory_board_post', array($this, 'defaultMytoryBoard'));
     }
+
+    private function setConfig($config) {
+        $this->defaultBoardId = $config['defaultBoardId'] ?? $this->defaultBoardId;
+        $this->canAnonymousWriting = $config['canAnonymousWriting'] ?? $this->canAnonymousWriting;
+        $this->canSetNameByPost = $config['canSetNameByPost'] ?? $this->canSetNameByPost;
+    }
+
 
     function addSubMenu()
     {
-        $wp_term_query = new WP_Term_Query([
+        $wp_term_query = new \WP_Term_Query([
             'taxonomy'   => 'mytory_board',
             'hide_empty' => false,
         ]);
 
-        foreach ($wp_term_query->terms as $term) {
-            add_submenu_page(
-                'edit.php?post_type=mytory_board_post',
-                "{$term->name} 게시판",
-                "{$term->name} 게시판",
-                'edit_others_posts',
-                'mytory_board_' . $term->term_id,
-                function () use ($term) {
-                    $url = '/wp-admin/edit.php?post_type=mytory_board_post&mytory_board=' . $term->slug;
-                    ?>
-                    <meta http-equiv="refresh" content="0;url=<?= $url ?>"/>
-                    <?php
-                }
-            );
+        if ($wp_term_query->terms) {
+            foreach ($wp_term_query->terms as $term) {
+                add_submenu_page(
+                    'edit.php?post_type=mytory_board_post',
+                    "{$term->name} 게시판",
+                    "{$term->name} 게시판",
+                    'edit_others_posts',
+                    'mytory_board_' . $term->term_id,
+                    function () use ($term) {
+                        $url = site_url('/wp-admin/edit.php?post_type=mytory_board_post&mytory_board=' . $term->slug);
+                        ?>
+                        <meta http-equiv="refresh" content="0;url=<?= $url ?>"/>
+                        <?php
+                    }
+                );
+            }
         }
-
-
     }
 
-    function addRole()
-    {
-        add_role(
-            'board_writer',
-            '게시판 글쓴이',
-            array(
-                'read'         => true,
-                'upload_files' => true,
-            )
-        );
-    }
 
-    function removeRole()
-    {
-        remove_role('board_writer');
-    }
-
-    function flushRewriteRules()
-    {
-        $this->registerMytoryBoard();
-        $this->registerMytoryBoardPost();
-        flush_rewrite_rules();
-    }
 
     function registerMytoryBoard()
     {
@@ -151,9 +146,13 @@ class MytoryBoard
         register_post_type('mytory_board_post', $args);
     }
 
+	/**
+     * 게시판 없이 글을 저장하면, 기본 게시판을 설정한다. 단, 기본 게시판 번호가 설정돼 있어야 한다.
+	 * @param $post_id
+	 */
     function defaultMytoryBoard($post_id)
     {
-        if ( ! has_term('', 'mytory_board', $post_id)) {
+        if (!empty($this->defaultBoardId) and  ! has_term('', 'mytory_board', $post_id)) {
             wp_set_object_terms($post_id, $this->defaultBoardId, 'mytory_board');
         }
     }
@@ -176,15 +175,18 @@ class MytoryBoard
         wp_update_post((array)$post);
         add_action('save_post_mytory_board_post', array($this, 'savePost'), 10, 3);
 
-        foreach ($_POST['meta'] as $k => $v) {
+        if (!empty($_POST['meta'])) {
+	        foreach ($_POST['meta'] as $k => $v) {
 
-            if (mb_strcut($k, 0, 13, 'utf-8') === 'mytory_board_') {
-                update_post_meta($post_id, $k, $v);
-            } else {
-                update_post_meta($post_id, "mytory_board_{$k}", $v);
-            }
+		        if (mb_strcut($k, 0, 13, 'utf-8') === 'mytory_board_') {
+			        update_post_meta($post_id, $k, $v);
+		        } else {
+			        update_post_meta($post_id, "mytory_board_{$k}", $v);
+		        }
 
+	        }
         }
+
     }
 
     function globalJsVariable()
@@ -234,7 +236,4 @@ class MytoryBoard
     }
 }
 
-$MytoryBoard = new MytoryBoard();
-include_once 'MytoryBoardAdmin.php';
-include_once 'functions.php';
 

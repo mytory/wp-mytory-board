@@ -1,6 +1,6 @@
 <?php
 include '../../../wp-blog-header.php';
-http_response_code(200);
+\Mytory\Board\Helper::httpResponseCode(200);
 
 $post_id = (int)$_REQUEST['writing_id'];
 $post    = get_post($post_id);

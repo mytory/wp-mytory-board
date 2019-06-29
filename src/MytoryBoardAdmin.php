@@ -67,7 +67,7 @@ class MytoryBoardAdmin
         if ( ! empty($_GET['selected'])) {
             $args['post__not_in'] = explode(',', $_GET['selected']);
         }
-        $wp_query = new WP_Query($args);
+        $wp_query = new \WP_Query($args);
 
         $posts_for_autocomplete = array();
         while (have_posts()): the_post();
