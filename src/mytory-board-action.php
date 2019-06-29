@@ -1,5 +1,9 @@
 <?php
-include '../../../wp-blog-header.php';
+/**
+ * @var \Mytory\Board\MytoryBoard $mytoryBoard
+ */
+require '../../../../../../../wp-blog-header.php';
+
 \Mytory\Board\Helper::httpResponseCode( 200 );
 
 $post_id = (int) $_POST['ID'];
@@ -73,10 +77,10 @@ if ( ! empty( $_POST['name'] ) ) {
 	die( '저장했습니다. 글은 승인 후 공개합니다.' );
 }
 
-if ( $MytoryBoard->canSetNameByPost and ! empty( $_POST['custom_author'] ) ) {
+if ( $mytoryBoard->canSetNameByPost and ! empty( $_POST['custom_author'] ) ) {
 	update_post_meta( $post_id, 'custom_author', $_POST['custom_author'] );
 }
-if ( $MytoryBoard->canSetNameByPost and empty( $_POST['custom_author'] ) ) {
+if ( $mytoryBoard->canSetNameByPost and empty( $_POST['custom_author'] ) ) {
 	update_post_meta( $post_id, 'custom_author', '' );
 }
 

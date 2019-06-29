@@ -30,43 +30,53 @@ class MytoryBoard {
 	 */
 	public $canSetNameByPost = true;
 
+
+	public $taxonomyKey = 'mytory_board';
+	public $taxonomyLabel = '게시판';
+	public $postTypeKey = 'mytory_board_post';
+	public $postTypeLabel = '게시글';
+
+
 	function __construct( $config = [] ) {
 		$this->setConfig( $config );
 
-		add_action( 'init', array( $this, 'registerMytoryBoardPost' ) );
-		add_action( 'init', array( $this, 'registerMytoryBoard' ) );
+		add_action( 'init', [ $this, 'registerMytoryBoardPost' ] );
+		add_action( 'init', [ $this, 'registerMytoryBoard' ] );
 		add_action( 'admin_menu', [ $this, 'addSubMenu' ] );
-		add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ) );
-		add_action( 'save_post_mytory_board_post', array( $this, 'savePost' ), 10, 3 );
-		add_action( 'wp_head', array( $this, 'globalJsVariable' ) );
-		add_action( 'wp_ajax_increase_pageview', array( $this, 'increasePageview' ) );
-		add_action( 'wp_ajax_nopriv_increase_pageview', array( $this, 'increasePageview' ) );
-		add_action( 'publish_mytory_board_post', array( $this, 'defaultMytoryBoard' ) );
+		add_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ], 10, 3 );
+		add_action( 'wp_head', [ $this, 'globalJsVariable' ] );
+		add_action( "wp_ajax_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageview' ] );
+		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageview' ] );
+		add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 	}
 
 	private function setConfig( $config ) {
 		$this->defaultBoardId      = $config['defaultBoardId'] ?? $this->defaultBoardId;
 		$this->canAnonymousWriting = $config['canAnonymousWriting'] ?? $this->canAnonymousWriting;
 		$this->canSetNameByPost    = $config['canSetNameByPost'] ?? $this->canSetNameByPost;
+		$this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
+		$this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
+		$this->postTypeKey         = $config['postTypeKey'] ?? $this->postTypeKey;
+		$this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
 	}
 
 
 	function addSubMenu() {
 		$wp_term_query = new \WP_Term_Query( [
-			'taxonomy'   => 'mytory_board',
+			'taxonomy'   => $this->taxonomyKey,
 			'hide_empty' => false,
 		] );
 
 		if ( $wp_term_query->terms ) {
 			foreach ( $wp_term_query->terms as $term ) {
 				add_submenu_page(
-					'edit.php?post_type=mytory_board_post',
-					"{$term->name} 게시판",
-					"{$term->name} 게시판",
+					"edit.php?post_type={$this->postTypeKey}",
+					"{$term->name} {$this->taxonomyLabel}",
+					"{$term->name} {$this->taxonomyLabel}",
 					'edit_others_posts',
-					'mytory_board_' . $term->term_id,
+					"{$this->taxonomyKey}_{$term->term_id}",
 					function () use ( $term ) {
-						$url = site_url( '/wp-admin/edit.php?post_type=mytory_board_post&mytory_board=' . $term->slug );
+						$url = site_url( "/wp-admin/edit.php?post_type={$this->postTypeKey}&{$this->taxonomyKey}={$term->slug}" );
 						?>
                         <meta http-equiv="refresh" content="0;url=<?= $url ?>"/>
 						<?php
@@ -79,21 +89,21 @@ class MytoryBoard {
 
 	function registerMytoryBoard() {
 		$labels = array(
-			'name'                       => '게시판',
-			'singular_name'              => '게시판',
-			'search_items'               => '게시판 검색',
-			'popular_items'              => '많이 쓴 게시판',
-			'all_items'                  => '게시판 목록',
-			'edit_item'                  => '게시판 수정',
-			'view_item'                  => '게시판 보기',
-			'update_item'                => '저장',
-			'add_new_item'               => '게시판 추가',
-			'new_item_name'              => '새 게시판 이름',
-			'separate_items_with_commas' => '여러 개 입력하려면 쉽표(,)로 구분하세요',
-			'add_or_remove_items'        => '게시판 추가 혹은 삭제',
-			'choose_from_most_used'      => '많이 쓴 게시판 중 선택',
-			'not_found'                  => '게시판이 없습니다',
-			'menu_name'                  => '게시판',
+			'name'                       => "{$this->taxonomyLabel}",
+			'singular_name'              => "{$this->taxonomyLabel}",
+			'search_items'               => "{$this->taxonomyLabel} 검색",
+			'popular_items'              => "많이 쓴 {$this->taxonomyLabel}",
+			'all_items'                  => "{$this->taxonomyLabel} 목록",
+			'edit_item'                  => "{$this->taxonomyLabel} 수정",
+			'view_item'                  => "{$this->taxonomyLabel} 보기",
+			'update_item'                => "저장",
+			'add_new_item'               => "{$this->taxonomyLabel} 추가",
+			'new_item_name'              => "새 {$this->taxonomyLabel} 이름",
+			'separate_items_with_commas' => "여러 개 입력하려면 쉽표(,)로 구분하세요",
+			'add_or_remove_items'        => "{$this->taxonomyLabel} 추가 혹은 삭제",
+			'choose_from_most_used'      => "많이 쓴 {$this->taxonomyLabel} 중 선택",
+			'not_found'                  => "{$this->taxonomyLabel}이 없습니다",
+			'menu_name'                  => "{$this->taxonomyLabel}",
 		);
 
 		$args = array(
@@ -106,24 +116,24 @@ class MytoryBoard {
 			),
 		);
 
-		register_taxonomy( 'mytory_board', 'mytory_board_post', $args );
+		register_taxonomy( $this->taxonomyKey, $this->postTypeKey, $args );
 	}
 
 	function registerMytoryBoardPost() {
 		$labels = array(
-			'name'               => '게시글',
-			'singular_name'      => '게시글',
-			'add_new'            => '게시글 추가',
-			'add_new_item'       => '게시글 추가',
-			'edit_item'          => '게시글 수정',
-			'new_item'           => '게시글 추가',
-			'all_items'          => '게시글',
-			'view_item'          => '게시글 상세 보기',
-			'search_items'       => '게시글 검색',
-			'not_found'          => '등록된 게시글이 없습니다',
-			'not_found_in_trash' => '휴지통에 게시글이 없습니다',
-			'parent_item_colon'  => '부모 게시글:',
-			'menu_name'          => '게시글',
+			'name'               => "{$this->postTypeLabel}",
+			'singular_name'      => "{$this->postTypeLabel}",
+			'add_new'            => "{$this->postTypeLabel} 추가",
+			'add_new_item'       => "{$this->postTypeLabel} 추가",
+			'edit_item'          => "{$this->postTypeLabel} 수정",
+			'new_item'           => "{$this->postTypeLabel} 추가",
+			'all_items'          => "{$this->postTypeLabel}",
+			'view_item'          => "{$this->postTypeLabel} 상세 보기",
+			'search_items'       => "{$this->postTypeLabel} 검색",
+			'not_found'          => "등록된 {$this->postTypeLabel}이 없습니다",
+			'not_found_in_trash' => "휴지통에 {$this->postTypeLabel}이 없습니다",
+			'parent_item_colon'  => "부모 {$this->postTypeLabel}:",
+			'menu_name'          => "{$this->postTypeLabel}",
 		);
 
 		$args = array(
@@ -137,7 +147,7 @@ class MytoryBoard {
 			'supports'    => array( 'title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions' ),
 		);
 
-		register_post_type( 'mytory_board_post', $args );
+		register_post_type( $this->postTypeKey, $args );
 	}
 
 	/**
@@ -146,34 +156,24 @@ class MytoryBoard {
 	 * @param $post_id
 	 */
 	function defaultMytoryBoard( $post_id ) {
-		if ( ! empty( $this->defaultBoardId ) and ! has_term( '', 'mytory_board', $post_id ) ) {
-			wp_set_object_terms( $post_id, $this->defaultBoardId, 'mytory_board' );
-		}
-	}
-
-	function scripts() {
-		wp_enqueue_style( 'mytory-board-style', plugin_dir_url( __FILE__ ) . 'style.css' );
-		wp_enqueue_script( 'mytory-board-script', plugin_dir_url( __FILE__ ) . 'script.js', array( 'jquery' ), false, true );
-		if ( is_singular() ) {
-			// 어딘가에 data-post-id="1234" 라고 넣으면 그걸 참조해서 페이지뷰를 올린다.
-			wp_enqueue_script( 'mytory-pageview', plugin_dir_url( __FILE__ ) . 'pageview.js', array( 'jquery' ), false,
-				true );
+		if ( ! empty( $this->defaultBoardId ) and ! has_term( '', $this->taxonomyKey, $post_id ) ) {
+			wp_set_object_terms( $post_id, $this->defaultBoardId, $this->taxonomyKey );
 		}
 	}
 
 	function savePost( $post_id, $post, $is_update ) {
-		remove_action( 'save_post_mytory_board_post', array( $this, 'savePost' ) );
+		remove_action( "save_post_{$this->postTypeKey}", array( $this, 'savePost' ) );
 		$post->post_name = $post->ID;
 		wp_update_post( (array) $post );
-		add_action( 'save_post_mytory_board_post', array( $this, 'savePost' ), 10, 3 );
+		add_action( "save_post_{$this->postTypeKey}", array( $this, 'savePost' ), 10, 3 );
 
 		if ( ! empty( $_POST['meta'] ) ) {
 			foreach ( $_POST['meta'] as $k => $v ) {
 
-				if ( mb_strcut( $k, 0, 13, 'utf-8' ) === 'mytory_board_' ) {
+				if ( mb_strcut( $k, 0, 13, 'utf-8' ) === "{$this->taxonomyKey}_" ) {
 					update_post_meta( $post_id, $k, $v );
 				} else {
-					update_post_meta( $post_id, "mytory_board_{$k}", $v );
+					update_post_meta( $post_id, "{$this->taxonomyKey}_{$k}", $v );
 				}
 
 			}
@@ -187,14 +187,14 @@ class MytoryBoard {
         <script type="text/javascript">
             var MytoryBoard = {
                 ajaxUrl: <?= json_encode( admin_url( "admin-ajax.php" ) ); ?>,
-                ajaxNonce: <?= json_encode( wp_create_nonce( "mytory-board-ajax-nonce" ) ); ?>,
+                ajaxNonce: <?= json_encode( wp_create_nonce( "{$this->taxonomyKey}-ajax-nonce" ) ); ?>,
                 wpDebug: <?= defined( WP_DEBUG ) ? WP_DEBUG : 'false' ?>
             };
         </script><?php
 	}
 
 	function increasePageview() {
-		wp_verify_nonce( $_POST['nonce'], 'mytory-board-ajax-nonce' );
+		wp_verify_nonce( $_POST['nonce'], "{$this->taxonomyKey}-ajax-nonce" );
 		$post_id = $_POST['post_id'];
 		if ( $result = update_post_meta( $post_id, 'pageview', get_post_meta( $post_id, 'pageview', true ) + 1 ) ) {
 			echo json_encode( array( 'result' => 1, 'parameters' => $_POST ) );
