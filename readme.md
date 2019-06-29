@@ -3,7 +3,9 @@
 `composer.json` 예시
 -------------------
 
-repositories 항목 참조.
+composer.json을 자신의 테마 루트에 만들고 아래를 참고해서 만든다.
+
+아래 예시에서 repositories 항목을 눈여겨 봐야 한다.
 
 ~~~ json
 {
@@ -27,6 +29,7 @@ repositories 항목 참조.
 }
 ~~~
 
+이렇게 한 뒤 `composer install` 실행
 
 설치 후 해 줘야 할 것
 -----------------
