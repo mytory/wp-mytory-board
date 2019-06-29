@@ -26,22 +26,22 @@ if (empty($post_title)) {
     die('제목을 입력하세요.');
 }
 
-if (!is_user_logged_in() and empty($_POST['custom_author'])) {
+if ( ! is_user_logged_in() and empty($_POST['custom_author'])) {
     die('이름을 입력하세요.');
 }
 
-if (!is_user_logged_in() and empty($_POST['anonymous_password'])) {
+if ( ! is_user_logged_in() and empty($_POST['anonymous_password'])) {
     die('비밀번호를 입력하세요.');
 }
 
 $post_data = array(
-    'ID' => $post_id,
-    'post_title' => $post_title,
+    'ID'           => $post_id,
+    'post_title'   => $post_title,
     'post_content' => $_POST['post_content'],
-    'author' => (is_user_logged_in()) ? get_current_user_id() : 0,
-    'post_type' => 'mytory_board_post',
-    'post_status' => $_POST['post_status'],
-    'ping_status' => false,
+    'author'       => (is_user_logged_in()) ? get_current_user_id() : 0,
+    'post_type'    => 'mytory_board_post',
+    'post_status'  => $_POST['post_status'],
+    'ping_status'  => false,
 );
 
 if (strstr($post_data['post_content'], 'tpr0808')
@@ -56,31 +56,31 @@ if (strstr($post_data['post_content'], 'tpr0808')
     exit;
 }
 
-if (!empty($_POST['name'])) {
+if ( ! empty($_POST['name'])) {
     // name 필드는 봇용 함정(honeypot)이다. js를 켜고 들어오면 아무 값도 들어가지 않는다. 따라서 값이 있으면 js를 끄고 들어온 봇이다.
     $post_data['post_status'] = 'private';
 }
 
 
-if (!$post_id) {
+if ( ! $post_id) {
     $post_id = wp_insert_post($post_data);
 } else {
     $post_id = wp_update_post($post_data);
 }
 
-if (!empty($_POST['name'])) {
+if ( ! empty($_POST['name'])) {
     // name 필드는 봇용 함정(honeypot)이다. js를 켜고 들어오면 아무 값도 들어가지 않는다. 따라서 값이 있으면 js를 끄고 들어온 봇이다.
     die('저장했습니다. 글은 승인 후 공개합니다.');
 }
 
-if ($MytoryBoard->canSetNameByPost and !empty($_POST['custom_author'])) {
+if ($MytoryBoard->canSetNameByPost and ! empty($_POST['custom_author'])) {
     update_post_meta($post_id, 'custom_author', $_POST['custom_author']);
 }
 if ($MytoryBoard->canSetNameByPost and empty($_POST['custom_author'])) {
     update_post_meta($post_id, 'custom_author', '');
 }
 
-if (!is_user_logged_in()) {
+if ( ! is_user_logged_in()) {
     update_post_meta($post_id, 'anonymous_password', sha1($_POST['anonymous_password']));
 }
 

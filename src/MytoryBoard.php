@@ -1,5 +1,7 @@
 <?php
 
+namespace Mytory\Board;
+
 /**
  * @package           MytoryBoard
  * Plugin Name:       Mytory Board
@@ -34,89 +36,24 @@ class MytoryBoard
         }
     }
 
-    function registerMytoryBoardPost()
-    {
-        $labels = array(
-            'name' => '게시글',
-            'singular_name' => '게시글',
-            'add_new' => '게시글 추가',
-            'add_new_item' => '게시글 추가',
-            'edit_item' => '게시글 수정',
-            'new_item' => '게시글 추가',
-            'all_items' => '게시글',
-            'view_item' => '게시글 상세 보기',
-            'search_items' => '게시글 검색',
-            'not_found' => '등록된 게시글이 없습니다',
-            'not_found_in_trash' => '휴지통에 게시글이 없습니다',
-            'parent_item_colon' => '부모 게시글:',
-            'menu_name' => '게시글',
-        );
-
-        $args = array(
-            'labels' => $labels,
-            'public' => true,
-            'has_archive' => true,
-            'rewrite' => array(
-                'slug' => 'b',
-                'with_front' => false,
-            ),
-            'supports' => array('title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions'),
-        );
-
-        register_post_type('mytory_board_post', $args);
-    }
-
-    function registerMytoryBoard()
-    {
-        $labels = array(
-            'name' => '게시판',
-            'singular_name' => '게시판',
-            'search_items' => '게시판 검색',
-            'popular_items' => '많이 쓴 게시판',
-            'all_items' => '게시판 목록',
-            'edit_item' => '게시판 수정',
-            'view_item' => '게시판 보기',
-            'update_item' => '저장',
-            'add_new_item' => '게시판 추가',
-            'new_item_name' => '새 게시판 이름',
-            'separate_items_with_commas' => '여러 개 입력하려면 쉽표(,)로 구분하세요',
-            'add_or_remove_items' => '게시판 추가 혹은 삭제',
-            'choose_from_most_used' => '많이 쓴 게시판 중 선택',
-            'not_found' => '게시판이 없습니다',
-            'menu_name' => '게시판',
-        );
-
-        $args = array(
-            'labels' => $labels,
-            'hierarchical' => true,
-            'show_admin_column' => true,
-            'rewrite' => array(
-                'slug' => 'mb',
-                'with_front' => false,
-            ),
-        );
-
-        register_taxonomy('mytory_board', 'mytory_board_post', $args);
-    }
-
     function addSubMenu()
     {
         $wp_term_query = new WP_Term_Query([
-            'taxonomy' => 'mytory_board',
+            'taxonomy'   => 'mytory_board',
             'hide_empty' => false,
         ]);
 
-	    foreach ( $wp_term_query->terms as $term ) {
-		    add_submenu_page(
-			    'edit.php?post_type=mytory_board_post',
+        foreach ($wp_term_query->terms as $term) {
+            add_submenu_page(
+                'edit.php?post_type=mytory_board_post',
                 "{$term->name} 게시판",
                 "{$term->name} 게시판",
                 'edit_others_posts',
                 'mytory_board_' . $term->term_id,
                 function () use ($term) {
-			        $url = '/wp-admin/edit.php?post_type=mytory_board_post&mytory_board=' . $term->slug;
-			        ?>
-                    <meta http-equiv="refresh" content="0;url=<?= $url ?>" />
+                    $url = '/wp-admin/edit.php?post_type=mytory_board_post&mytory_board=' . $term->slug;
+                    ?>
+                    <meta http-equiv="refresh" content="0;url=<?= $url ?>"/>
                     <?php
                 }
             );
@@ -131,7 +68,7 @@ class MytoryBoard
             'board_writer',
             '게시판 글쓴이',
             array(
-                'read' => true,
+                'read'         => true,
                 'upload_files' => true,
             )
         );
@@ -149,9 +86,74 @@ class MytoryBoard
         flush_rewrite_rules();
     }
 
+    function registerMytoryBoard()
+    {
+        $labels = array(
+            'name'                       => '게시판',
+            'singular_name'              => '게시판',
+            'search_items'               => '게시판 검색',
+            'popular_items'              => '많이 쓴 게시판',
+            'all_items'                  => '게시판 목록',
+            'edit_item'                  => '게시판 수정',
+            'view_item'                  => '게시판 보기',
+            'update_item'                => '저장',
+            'add_new_item'               => '게시판 추가',
+            'new_item_name'              => '새 게시판 이름',
+            'separate_items_with_commas' => '여러 개 입력하려면 쉽표(,)로 구분하세요',
+            'add_or_remove_items'        => '게시판 추가 혹은 삭제',
+            'choose_from_most_used'      => '많이 쓴 게시판 중 선택',
+            'not_found'                  => '게시판이 없습니다',
+            'menu_name'                  => '게시판',
+        );
+
+        $args = array(
+            'labels'            => $labels,
+            'hierarchical'      => true,
+            'show_admin_column' => true,
+            'rewrite'           => array(
+                'slug'       => 'mb',
+                'with_front' => false,
+            ),
+        );
+
+        register_taxonomy('mytory_board', 'mytory_board_post', $args);
+    }
+
+    function registerMytoryBoardPost()
+    {
+        $labels = array(
+            'name'               => '게시글',
+            'singular_name'      => '게시글',
+            'add_new'            => '게시글 추가',
+            'add_new_item'       => '게시글 추가',
+            'edit_item'          => '게시글 수정',
+            'new_item'           => '게시글 추가',
+            'all_items'          => '게시글',
+            'view_item'          => '게시글 상세 보기',
+            'search_items'       => '게시글 검색',
+            'not_found'          => '등록된 게시글이 없습니다',
+            'not_found_in_trash' => '휴지통에 게시글이 없습니다',
+            'parent_item_colon'  => '부모 게시글:',
+            'menu_name'          => '게시글',
+        );
+
+        $args = array(
+            'labels'      => $labels,
+            'public'      => true,
+            'has_archive' => true,
+            'rewrite'     => array(
+                'slug'       => 'b',
+                'with_front' => false,
+            ),
+            'supports'    => array('title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions'),
+        );
+
+        register_post_type('mytory_board_post', $args);
+    }
+
     function defaultMytoryBoard($post_id)
     {
-        if (!has_term('', 'mytory_board', $post_id)) {
+        if ( ! has_term('', 'mytory_board', $post_id)) {
             wp_set_object_terms($post_id, $this->defaultBoardId, 'mytory_board');
         }
     }
@@ -162,7 +164,8 @@ class MytoryBoard
         wp_enqueue_script('mytory-board-script', plugin_dir_url(__FILE__) . 'script.js', array('jquery'), false, true);
         if (is_singular()) {
             // 어딘가에 data-post-id="1234" 라고 넣으면 그걸 참조해서 페이지뷰를 올린다.
-            wp_enqueue_script('mytory-pageview', plugin_dir_url(__FILE__) . 'pageview.js', array('jquery'), false, true);
+            wp_enqueue_script('mytory-pageview', plugin_dir_url(__FILE__) . 'pageview.js', array('jquery'), false,
+                true);
         }
     }
 
@@ -176,9 +179,9 @@ class MytoryBoard
         foreach ($_POST['meta'] as $k => $v) {
 
             if (mb_strcut($k, 0, 13, 'utf-8') === 'mytory_board_') {
-	            update_post_meta($post_id, $k, $v);
+                update_post_meta($post_id, $k, $v);
             } else {
-	            update_post_meta($post_id, "mytory_board_{$k}", $v);
+                update_post_meta($post_id, "mytory_board_{$k}", $v);
             }
 
         }
@@ -190,7 +193,7 @@ class MytoryBoard
         ?>
         <script type="text/javascript">
             var MytoryBoard = {
-                ajaxUrl: <?= json_encode(admin_url( "admin-ajax.php" )); ?>,
+                ajaxUrl: <?= json_encode(admin_url("admin-ajax.php")); ?>,
                 ajaxNonce: <?= json_encode(wp_create_nonce("mytory-board-ajax-nonce")); ?>,
                 wpDebug: <?= defined(WP_DEBUG) ? WP_DEBUG : 'false' ?>
             };
@@ -212,7 +215,7 @@ class MytoryBoard
     public function getEditLink()
     {
         $edit_link = get_permalink(get_page_by_path('write'));
-        $parsed = parse_url($edit_link);
+        $parsed    = parse_url($edit_link);
         print_r($parsed);
         if (empty($parsed['query'])) {
             $parsed['query'] = '';
@@ -220,7 +223,8 @@ class MytoryBoard
         parse_str($parsed['query'], $query_string);
         print_r($query_string);
         $query_string['writing_id'] = get_the_ID();
-        $edit_link = "{$parsed['scheme']}://{$parsed['host']}{$parsed['path']}?" . http_build_query($query_string);
+        $edit_link                  = "{$parsed['scheme']}://{$parsed['host']}{$parsed['path']}?" . http_build_query($query_string);
+
         return $edit_link;
     }
 

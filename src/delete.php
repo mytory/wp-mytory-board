@@ -2,8 +2,8 @@
 include '../../../wp-blog-header.php';
 http_response_code(200);
 
-$post_id = (int) $_REQUEST['writing_id'];
-$post = get_post($post_id);
+$post_id = (int)$_REQUEST['writing_id'];
+$post    = get_post($post_id);
 
 if ($post->post_author > 0) {
     if ($post->post_author == get_current_user_id()) {
@@ -25,8 +25,8 @@ if ($post->post_author == 0 and empty($_REQUEST['password'])) {
     exit;
 }
 
-if ($post->post_author == 0 and !empty($_REQUEST['password'])) {
-    $password_hash = get_post_meta($post_id, 'anonymous_password', true);
+if ($post->post_author == 0 and ! empty($_REQUEST['password'])) {
+    $password_hash         = get_post_meta($post_id, 'anonymous_password', true);
     $password_confirm_hash = sha1($_REQUEST['password']);
     if ($password_hash == $password_confirm_hash) {
         wp_delete_post($post_id);

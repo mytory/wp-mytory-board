@@ -7,6 +7,7 @@
         body {
             font-family: 'Apple SD Gothic Neo', 'malgun gothic', 'nanumgothic', sans-serif;
         }
+
         .form {
             width: 100%;
             text-align: center;

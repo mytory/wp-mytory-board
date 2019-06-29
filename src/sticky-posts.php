@@ -19,7 +19,7 @@
 </style>
 <div class="wrap">
     <h1>고정글</h1>
-    <?php if (!empty($result_message)) { ?>
+    <?php if ( ! empty($result_message)) { ?>
         <div id="message" class="notice notice-success">
             <p><?= $result_message ?></p>
         </div>
@@ -38,11 +38,11 @@
         <div class="card" id="selected">
             <?php
             $sticky_post_ids = get_option('sticky_posts');
-            if (!empty($sticky_post_ids)) {
+            if ( ! empty($sticky_post_ids)) {
                 global $wp_query;
                 $wp_query = new WP_Query(array(
-                    'post__in' => get_option('sticky_posts'),
-                    'post_type' => 'any',
+                    'post__in'       => get_option('sticky_posts'),
+                    'post_type'      => 'any',
                     'posts_per_page' => -1,
                 ));
                 while (have_posts()): the_post();

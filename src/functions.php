@@ -1,5 +1,5 @@
 <?php
-if (!function_exists('http_response_code')) {
+if ( ! function_exists('http_response_code')) {
     function http_response_code($code = null)
     {
 

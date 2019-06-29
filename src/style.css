@@ -11,6 +11,7 @@
     border: 0;
     word-wrap: normal !important; /* many screen reader and browser combinations announce broken words as they would appear visually */
 }
+
 .wp-editor-container {
     border: 1px solid #ddd;
 }

@@ -1,0 +1,24 @@
+{
+  "name": "mytory/wp-mytory-board",
+  "description": "워드프레스에 게시판 기능을 추가한다.",
+  "version": "0.5",
+  "keywords": [
+    "wordpress",
+    "board"
+  ],
+  "authors": [
+    {
+      "name": "An, Hyeong-woo",
+      "email": "mytory@gmail.com"
+    }
+  ],
+  "type": "library",
+  "require": {
+    "php": ">=5.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Mytory\\Board\\": "src/"
+    }
+  }
+}
