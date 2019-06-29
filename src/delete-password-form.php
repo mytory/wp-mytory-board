@@ -18,8 +18,8 @@
 <body>
 <form class="form" action="delete.php" method="post">
     <h1>게시글 삭제</h1>
-    <input type="hidden" name="writing_id" value="<?= esc_attr($_REQUEST['writing_id']) ?>">
-    <input type="hidden" name="redirect_to" value="<?= esc_attr($_REQUEST['redirect_to']) ?>">
+    <input type="hidden" name="writing_id" value="<?= esc_attr( $_REQUEST['writing_id'] ) ?>">
+    <input type="hidden" name="redirect_to" value="<?= esc_attr( $_REQUEST['redirect_to'] ) ?>">
     <label for="password">비밀번호를 입력하세요.</label>
     <br>
     <input type="password" name="password" id="password" title="비밀번호">
