@@ -61,6 +61,8 @@ class MytoryBoard {
 		add_action( "wp_ajax_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageview' ] );
 		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageview' ] );
 		add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
+
+		new MytoryBoardAdmin($this);
 	}
 
 	private function setConfig( $config ) {

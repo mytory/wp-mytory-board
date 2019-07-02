@@ -9,28 +9,34 @@ namespace Mytory\Board;
  * Time: 1:41 PM
  */
 class MytoryBoardAdmin {
-	function __construct() {
+
+	private $mytory_board;
+
+	function __construct(MytoryBoard $mytory_board) {
+
+		$this->mytory_board = $mytory_board;
+
 		add_action( 'admin_menu', array( $this, 'addMenuPage' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'adminScripts' ) );
-		add_action( 'wp_ajax_mytoryBoardSearchPost', array( $this, 'searchPost' ) );
+		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_search_post", array( $this, 'searchPost' ) );
 		add_action( 'admin_init', array( $this, 'options' ) );
 	}
 
 	function addMenuPage() {
 		add_submenu_page(
-			'edit.php?post_type=mytory_board_post',
+			"edit.php?post_type={$this->mytory_board->postTypeKey}",
 			'고정글',
 			'고정글',
 			'edit_others_posts',
-			'mytory-board-sticky-posts',
+			"{$this->mytory_board->taxonomyKey}-sticky-posts",
 			array( $this, 'stickyPosts' )
 		);
 	}
 
 	function adminScripts() {
 		$screen = get_current_screen();
-		if ( $screen->id == 'toplevel_page_mytory-board-sticky-posts' ) {
-			wp_enqueue_script( 'mytory-board-sticky-posts', plugin_dir_url( __FILE__ ) . 'sticky-posts.js',
+		if ( $screen->id == "toplevel_page_{$this->mytory_board->taxonomyKey}-sticky-posts" ) {
+			wp_enqueue_script( "{$this->mytory_board->taxonomyKey}-sticky-posts", plugin_dir_url( __FILE__ ) . 'sticky-posts.js',
 				array( 'jquery-ui-autocomplete', 'underscore' ), false, true );
 		}
 	}
@@ -38,7 +44,7 @@ class MytoryBoardAdmin {
 	function stickyPosts() {
 		$result_message = "";
 		if ( ! empty( $_POST ) ) {
-			wp_verify_nonce( $_POST['_wpnonce'], 'mytory-board-sticky-posts' );
+			wp_verify_nonce( $_POST['_wpnonce'], "{$this->mytory_board->taxonomyKey}-sticky-posts" );
 			$diff = array_diff( get_option( 'sticky_posts' ), explode( ',', $_POST['sticky_posts'] ) );
 			if ( update_option( 'sticky_posts', explode( ',', $_POST['sticky_posts'] ) ) ) {
 				$result_message = '저장했습니다.';
@@ -81,9 +87,4 @@ class MytoryBoardAdmin {
 		echo json_encode( $posts_for_autocomplete );
 		wp_die();
 	}
-
-	function options() {
-	}
 }
-
-new MytoryBoardAdmin();
