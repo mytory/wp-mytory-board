@@ -37,6 +37,19 @@ class MytoryBoard {
 	public $postTypeLabel = '게시글';
 
 
+	/**
+	 * MytoryBoard constructor.
+	 *
+	 * @param array $config {
+     *     @type int $defaultBoardId: 기본 게시판 term id
+	 *     @type boolean $canAnonymousWriting: 익명 쓰기 가능 여부
+	 *     @type boolean $canSetNameByPost: 게시글별 이름 설정 가능 여부
+	 *     @type string $taxonomyKey: 게시판 taxonomy key
+	 *     @type string $taxonomyLabel: 게시판 taxonomy label
+	 *     @type string $postTypeKey: 게시글 post type key
+	 *     @type string $postTypeLabel: 게시글 post type label
+     * }
+	 */
 	function __construct( $config = [] ) {
 		$this->setConfig( $config );
 
