@@ -33,22 +33,27 @@ class MytoryBoard {
 
 	public $taxonomyKey = 'mytory_board';
 	public $taxonomyLabel = '게시판';
+	public $taxonomyRewriteSlug = 'mb';
 	public $postTypeKey = 'mytory_board_post';
 	public $postTypeLabel = '게시글';
+	public $postTypeRewriteSlug = 'b';
 
 
 	/**
 	 * MytoryBoard constructor.
 	 *
 	 * @param array $config {
-     *     @type int $defaultBoardId: 기본 게시판 term id
-	 *     @type boolean $canAnonymousWriting: 익명 쓰기 가능 여부
-	 *     @type boolean $canSetNameByPost: 게시글별 이름 설정 가능 여부
-	 *     @type string $taxonomyKey: 게시판 taxonomy key
-	 *     @type string $taxonomyLabel: 게시판 taxonomy label
-	 *     @type string $postTypeKey: 게시글 post type key
-	 *     @type string $postTypeLabel: 게시글 post type label
-     * }
+	 *
+	 * @type int $defaultBoardId : 기본 게시판 term id
+	 * @type boolean $canAnonymousWriting : 익명 쓰기 가능 여부
+	 * @type boolean $canSetNameByPost : 게시글별 이름 설정 가능 여부
+	 * @type string $taxonomyKey : 게시판 taxonomy key
+	 * @type string $taxonomyLabel : 게시판 taxonomy label
+	 * @type string $taxonomyRewriteSlug : 게시판 url rewrite slug. Default 'mb'
+	 * @type string $postTypeKey : 게시글 post type key
+	 * @type string $postTypeLabel : 게시글 post type label
+	 * @type string $postTypeRewriteSlug : 게시글 url rewrite slug. Default 'b'
+	 * }
 	 */
 	function __construct( $config = [] ) {
 		$this->setConfig( $config );
@@ -62,7 +67,7 @@ class MytoryBoard {
 		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageview' ] );
 		add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 
-		new MytoryBoardAdmin($this);
+		new MytoryBoardAdmin( $this );
 	}
 
 	private function setConfig( $config ) {
@@ -71,8 +76,10 @@ class MytoryBoard {
 		$this->canSetNameByPost    = $config['canSetNameByPost'] ?? $this->canSetNameByPost;
 		$this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
 		$this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
+		$this->taxonomyRewriteSlug = $config['taxonomyRewriteSlug'] ?? $this->taxonomyRewriteSlug;
 		$this->postTypeKey         = $config['postTypeKey'] ?? $this->postTypeKey;
 		$this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
+		$this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
 	}
 
 
@@ -126,7 +133,7 @@ class MytoryBoard {
 			'hierarchical'      => true,
 			'show_admin_column' => true,
 			'rewrite'           => array(
-				'slug'       => 'mb',
+				'slug'       => $this->taxonomyRewriteSlug,
 				'with_front' => false,
 			),
 		);
@@ -156,7 +163,7 @@ class MytoryBoard {
 			'public'      => true,
 			'has_archive' => true,
 			'rewrite'     => array(
-				'slug'       => 'b',
+				'slug'       => $this->postTypeRewriteSlug,
 				'with_front' => false,
 			),
 			'supports'    => array( 'title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions' ),
