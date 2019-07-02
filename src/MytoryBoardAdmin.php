@@ -18,8 +18,7 @@ class MytoryBoardAdmin {
 
 		add_action( 'admin_menu', array( $this, 'addMenuPage' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'adminScripts' ) );
-		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_search_post", array( $this, 'searchPost' ) );
-		add_action( 'admin_init', array( $this, 'options' ) );
+		add_action( "wp_ajax_{$this->mytory_board->postTypeKey}_search_post", array( $this, 'searchPost' ) );
 	}
 
 	function addMenuPage() {
@@ -28,15 +27,16 @@ class MytoryBoardAdmin {
 			'고정글',
 			'고정글',
 			'edit_others_posts',
-			"{$this->mytory_board->taxonomyKey}-sticky-posts",
+			"sticky-posts",
 			array( $this, 'stickyPosts' )
 		);
 	}
 
 	function adminScripts() {
 		$screen = get_current_screen();
-		if ( $screen->id == "toplevel_page_{$this->mytory_board->taxonomyKey}-sticky-posts" ) {
-			wp_enqueue_script( "{$this->mytory_board->taxonomyKey}-sticky-posts", plugin_dir_url( __FILE__ ) . 'sticky-posts.js',
+
+		if ( $screen->id == "{$this->mytory_board->postTypeKey}_page_sticky-posts" ) {
+			wp_enqueue_script( "{$this->mytory_board->taxonomyKey}-sticky-posts", Helper::url('sticky-posts.js'),
 				array( 'jquery-ui-autocomplete', 'underscore' ), false, true );
 		}
 	}

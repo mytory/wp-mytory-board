@@ -12,7 +12,7 @@ jQuery(function ($) {
     });
 
     $("#search-post").autocomplete({
-        source: ajaxurl + '?action=mytoryBoardSearchPost&selected=' + sticky_posts.join(','),
+        source: ajaxurl + '?action=' + typenow +'_search_post&selected=' + sticky_posts.join(','),
         minLength: 2,
         select: function (event, ui) {
             if (!ui.item.id) {

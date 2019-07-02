@@ -5,6 +5,10 @@ namespace Mytory\Board;
 
 
 class Helper {
+	static public function url( $path ) {
+		return get_theme_file_uri(str_replace(get_template_directory(), '', __DIR__ . '/' . $path));
+	}
+
 	static public function httpResponseCode( $code = null ) {
 
 		if ( $code !== null ) {
