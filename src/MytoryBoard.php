@@ -58,8 +58,8 @@ class MytoryBoard {
 	function __construct( $config = [] ) {
 		$this->setConfig( $config );
 
-		add_action( 'init', [ $this, 'registerMytoryBoardPost' ] );
-		add_action( 'init', [ $this, 'registerMytoryBoard' ] );
+		add_action( 'init', [ $this, 'registerPostType' ] );
+		add_action( 'init', [ $this, 'registerBoardTaxonomy' ] );
 		add_action( 'admin_menu', [ $this, 'addSubMenu' ] );
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ], 10, 3 );
 		add_action( 'wp_head', [ $this, 'globalJsVariable' ] );
@@ -109,7 +109,7 @@ class MytoryBoard {
 	}
 
 
-	function registerMytoryBoard() {
+	function registerBoardTaxonomy() {
 		$labels = array(
 			'name'                       => "{$this->taxonomyLabel}",
 			'singular_name'              => "{$this->taxonomyLabel}",
@@ -141,7 +141,7 @@ class MytoryBoard {
 		register_taxonomy( $this->taxonomyKey, $this->postTypeKey, $args );
 	}
 
-	function registerMytoryBoardPost() {
+	function registerPostType() {
 		$labels = array(
 			'name'               => "{$this->postTypeLabel}",
 			'singular_name'      => "{$this->postTypeLabel}",

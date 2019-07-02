@@ -10,8 +10,8 @@ class Setup {
 	}
 
 	public function flushRewriteRules() {
-		$this->mytoryBoard->registerMytoryBoard();
-		$this->mytoryBoard->registerMytoryBoardPost();
+		$this->mytoryBoard->registerBoardTaxonomy();
+		$this->mytoryBoard->registerPostType();
 		flush_rewrite_rules();
 	}
 
