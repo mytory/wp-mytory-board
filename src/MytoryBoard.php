@@ -242,7 +242,7 @@ class MytoryBoard {
 	}
 
 	public function getDeleteLink( $redirect_to ) {
-		return plugin_dir_url( __FILE__ ) . 'delete.php?writing_id=' . get_the_ID() . '&redirect_to=' . urlencode( $redirect_to );
+		return Helper::url('delete.php?writing_id=' . get_the_ID() . '&redirect_to=' . urlencode( $redirect_to ));
 	}
 }
 
