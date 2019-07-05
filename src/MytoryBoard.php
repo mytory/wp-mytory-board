@@ -30,6 +30,13 @@ class MytoryBoard {
 	 */
 	public $canSetNameByPost = true;
 
+	/**
+	 * 게시판별로 권한 관리를 할지 결정.
+	 * 클라이언트단을 제어해 주지는 않는다. 관리자단 제어용 권한이다.
+	 * @var bool
+	 */
+	public $roleByBoard = false;
+
 
 	public $taxonomyKey = 'mytory_board';
 	public $taxonomyLabel = '게시판';
@@ -68,6 +75,14 @@ class MytoryBoard {
 		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageview' ] );
 		add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 
+		if ( $this->roleByBoard ) {
+			add_action( "create_{$this->taxonomyKey}", [ $this, 'addRole' ], 10, 2 );
+			add_action( "edit_{$this->taxonomyKey}", [ $this, 'updateRole' ], 10, 2 );
+			add_action( "delete_{$this->taxonomyKey}", [ $this, 'removeRole' ], 10, 4 );
+		} else {
+			$this->addDefaultRole();
+		}
+
 		new MytoryBoardAdmin( $this );
 	}
 
@@ -75,6 +90,8 @@ class MytoryBoard {
 		$this->defaultBoardId      = $config['defaultBoardId'] ?? $this->defaultBoardId;
 		$this->canAnonymousWriting = $config['canAnonymousWriting'] ?? $this->canAnonymousWriting;
 		$this->canSetNameByPost    = $config['canSetNameByPost'] ?? $this->canSetNameByPost;
+		$this->roleByBoard         = $config['roleByBoard'] ?? $this->roleByBoard;
+
 		$this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
 		$this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
 		$this->taxonomyRewriteSlug = $config['taxonomyRewriteSlug'] ?? $this->taxonomyRewriteSlug;
@@ -167,15 +184,17 @@ class MytoryBoard {
 				'slug'       => $this->postTypeRewriteSlug,
 				'with_front' => false,
 			],
+			'show_ui'      => true,
 			'supports'     => [ 'title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions' ],
 			'capabilities' => [
-				'edit_post'          => "edit_{$this->postTypeKey}",
-				'edit_posts'         => "edit_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
-				'edit_others_posts'  => "edit_other_{$this->postTypeKey}",
-				'publish_posts'      => "publish_{$this->postTypeKey}",
-				'read_post'          => "read_{$this->postTypeKey}",
-				'read_private_posts' => "read_private_{$this->postTypeKey}",
-				'delete_post'        => "delete_{$this->postTypeKey}",
+				'edit_post'            => "edit_{$this->postTypeKey}",
+				'read_post'            => "read_{$this->postTypeKey}",
+				'delete_post'          => "delete_{$this->postTypeKey}",
+				'edit_posts'           => "edit_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+				'edit_published_posts' => "edit_published_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+				'edit_others_posts'    => "edit_other_{$this->postTypeKey}",
+				'publish_posts'        => "publish_{$this->postTypeKey}",
+				'read_private_posts'   => "read_private_{$this->postTypeKey}",
 			],
 			'map_meta_cap' => true,
 		];
@@ -186,12 +205,13 @@ class MytoryBoard {
 	public function boardCapabilities() {
 		$capabilities = [
 			"edit_{$this->postTypeKey}",
+			"read_{$this->postTypeKey}",
+			"delete_{$this->postTypeKey}",
 			"edit_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+			"edit_published_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
 			"edit_other_{$this->postTypeKey}",
 			"publish_{$this->postTypeKey}",
-			"read_{$this->postTypeKey}",
 			"read_private_{$this->postTypeKey}",
-			"delete_{$this->postTypeKey}",
 		];
 
 		$roles = [ 'administrator', 'editor' ];
@@ -266,7 +286,6 @@ class MytoryBoard {
 			$parsed['query'] = '';
 		}
 		parse_str( $parsed['query'], $query_string );
-		print_r( $query_string );
 		$query_string['writing_id'] = get_the_ID();
 		$edit_link                  = "{$parsed['scheme']}://{$parsed['host']}{$parsed['path']}?" . http_build_query( $query_string );
 
@@ -275,6 +294,69 @@ class MytoryBoard {
 
 	public function getDeleteLink( $redirect_to ) {
 		return Helper::url( 'delete.php?writing_id=' . get_the_ID() . '&redirect_to=' . urlencode( $redirect_to ) );
+	}
+
+	/**
+	 * 게시판을 추가할 때 role도 만든다.
+	 *
+	 * @param $term_id
+	 * @param $tt_id
+	 */
+	public function addRole( $term_id, $tt_id ) {
+		$term = get_term( $term_id );
+		add_role( "board-writer-{$term_id}", "{$term->name} 회원", [
+			'read'                                      => true,
+			'upload_files'                              => true,
+			"edit_{$this->postTypeKey}"                 => true,
+			"edit_{$this->postTypeKey}" . "s"           => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+			"edit_published_{$this->postTypeKey}" . "s" => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+			"publish_{$this->postTypeKey}"              => true,
+			"read_{$this->postTypeKey}"                 => true,
+			"delete_{$this->postTypeKey}"               => true,
+		] );
+		add_role( "board-editor-{$term_id}", "{$term->name} 편집자", get_role( 'editor' )->capabilities );
+	}
+
+	/**
+	 * 게시판 이름이 변경되면 role 이름도 변경된다.
+	 *
+	 * @param $term_id
+	 * @param $tt_id
+	 */
+	public function updateRole( $term_id, $tt_id ) {
+		remove_role( "board-writer-{$term_id}" );
+		remove_role( "board-editor-{$term_id}" );
+		$this->addRole( $term_id, $tt_id );
+	}
+
+	/**
+	 * @param int $term_id
+	 * @param int $tt_id
+	 * @param \WP_Term|\WP_Error $deleted_term
+	 * @param array $object_ids
+	 */
+	public function removeRole( int $term_id, int $tt_id, $deleted_term, array $object_ids ) {
+		remove_role( "board-writer-{$term_id}" );
+		remove_role( "board-editor-{$term_id}" );
+	}
+
+	private function addDefaultRole() {
+		if ( ! get_role( "{$this->taxonomyKey}_writer" ) ) {
+			add_role(
+				"{$this->taxonomyKey}_writer",
+				"{$this->taxonomyLabel} 글쓴이",
+				[
+					'read'                                      => true,
+					'upload_files'                              => true,
+					"edit_{$this->postTypeKey}"                 => true,
+					"edit_{$this->postTypeKey}" . "s"           => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+					"publish_{$this->postTypeKey}"              => true,
+					"edit_published_{$this->postTypeKey}" . "s" => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+					"read_{$this->postTypeKey}"                 => true,
+					"delete_{$this->postTypeKey}"               => true,
+				]
+			);
+		}
 	}
 }
 
