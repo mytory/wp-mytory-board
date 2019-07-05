@@ -59,6 +59,7 @@ class MytoryBoard {
 		$this->setConfig( $config );
 
 		add_action( 'init', [ $this, 'registerPostType' ] );
+		add_action( 'admin_init', [ $this, 'boardCapabilities' ] );
 		add_action( 'init', [ $this, 'registerBoardTaxonomy' ] );
 		add_action( 'admin_menu', [ $this, 'addSubMenu' ] );
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ], 10, 3 );
@@ -158,18 +159,49 @@ class MytoryBoard {
 			'menu_name'          => "{$this->postTypeLabel}",
 		);
 
-		$args = array(
-			'labels'      => $labels,
-			'public'      => true,
-			'has_archive' => true,
-			'rewrite'     => array(
+		$args = [
+			'labels'       => $labels,
+			'public'       => true,
+			'has_archive'  => true,
+			'rewrite'      => [
 				'slug'       => $this->postTypeRewriteSlug,
 				'with_front' => false,
-			),
-			'supports'    => array( 'title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions' ),
-		);
+			],
+			'supports'     => [ 'title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions' ],
+			'capabilities' => [
+				'edit_post'          => "edit_{$this->postTypeKey}",
+				'edit_posts'         => "edit_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+				'edit_others_posts'  => "edit_other_{$this->postTypeKey}",
+				'publish_posts'      => "publish_{$this->postTypeKey}",
+				'read_post'          => "read_{$this->postTypeKey}",
+				'read_private_posts' => "read_private_{$this->postTypeKey}",
+				'delete_post'        => "delete_{$this->postTypeKey}",
+			],
+			'map_meta_cap' => true,
+		];
 
 		register_post_type( $this->postTypeKey, $args );
+	}
+
+	public function boardCapabilities() {
+		$capabilities = [
+			"edit_{$this->postTypeKey}",
+			"edit_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+			"edit_other_{$this->postTypeKey}",
+			"publish_{$this->postTypeKey}",
+			"read_{$this->postTypeKey}",
+			"read_private_{$this->postTypeKey}",
+			"delete_{$this->postTypeKey}",
+		];
+
+		$roles = [ 'administrator', 'editor' ];
+
+		foreach ( $roles as $role ) {
+			$wp_role = get_role( $role );
+			foreach ( $capabilities as $capability ) {
+				$wp_role->add_cap( $capability );
+			}
+		}
 	}
 
 	/**
@@ -242,7 +274,7 @@ class MytoryBoard {
 	}
 
 	public function getDeleteLink( $redirect_to ) {
-		return Helper::url('delete.php?writing_id=' . get_the_ID() . '&redirect_to=' . urlencode( $redirect_to ));
+		return Helper::url( 'delete.php?writing_id=' . get_the_ID() . '&redirect_to=' . urlencode( $redirect_to ) );
 	}
 }
 
