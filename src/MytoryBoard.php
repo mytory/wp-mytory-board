@@ -72,20 +72,34 @@ class MytoryBoard {
 
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'updateMeta' ], 10, 3 );
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'slugToId' ], 10, 3 );
-		add_action( "save_post_{$this->postTypeKey}", [ $this, 'addBoardTermToPost' ], 10, 3 );
 
 		add_action( 'wp_head', [ $this, 'globalJsVariable' ] );
 		add_action( "wp_ajax_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageView' ] );
 		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageView' ] );
-		add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 		add_action( 'pre_get_posts', [ $this, 'onlyMyMedia' ] );
 
 		if ( $this->roleByBoard ) {
+
+		    // 게시판을 만들 때마다 해당 게시판의 권한을 정의하는 role을 만듦.
 			add_action( "create_{$this->taxonomyKey}", [ $this, 'addRole' ], 10, 2 );
+
+			// 게시판을 수정하면 role의 이름을 수정함.
 			add_action( "edit_{$this->taxonomyKey}", [ $this, 'updateRole' ], 10, 2 );
+
+			// 게시판을 삭제하면 role도 삭제함.
 			add_action( "delete_{$this->taxonomyKey}", [ $this, 'removeRole' ], 10, 4 );
+
+			// 글쓸 때 사용자의 role에 따라 글의 게시판을 정함.
+            // 워드프레스는 게시판별 권한 모델을 갖고 있지 않기 때문에, 일반 사용자는 그냥 게시판을 선택할 수 없게 하는 수밖에 없음.
+			add_action( "save_post_{$this->postTypeKey}", [ $this, 'addBoardTermToPost' ], 10, 3 );
 		} else {
+		    // 게시판별로 롤을 관리하는 게 아닌 경우에.
+
+            // taxonomyLabel 글쓴이 Role을 추가함.
 			$this->addDefaultRole();
+
+            // 게시글의 기본 게시판을 정함.
+			add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 		}
 
 		new MytoryBoardAdmin( $this );
