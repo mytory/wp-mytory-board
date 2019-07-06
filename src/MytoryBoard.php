@@ -69,7 +69,11 @@ class MytoryBoard {
 		add_action( 'admin_init', [ $this, 'boardCapabilities' ] );
 		add_action( 'init', [ $this, 'registerBoardTaxonomy' ] );
 		add_action( 'admin_menu', [ $this, 'addSubMenu' ] );
-		add_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ], 10, 3 );
+
+		add_action( "save_post_{$this->postTypeKey}", [ $this, 'updateMeta' ], 10, 3 );
+		add_action( "save_post_{$this->postTypeKey}", [ $this, 'slugToId' ], 10, 3 );
+		add_action( "save_post_{$this->postTypeKey}", [ $this, 'addBoardTermToPost' ], 10, 3 );
+
 		add_action( 'wp_head', [ $this, 'globalJsVariable' ] );
 		add_action( "wp_ajax_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageView' ] );
 		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageView' ] );
@@ -236,21 +240,53 @@ class MytoryBoard {
 		}
 	}
 
-	function savePost( $post_id, \WP_Post $post, $is_update ) {
-
-		remove_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ] );
+	function slugToId( $post_id, \WP_Post $post, $is_update ) {
+		remove_action( "save_post_{$this->postTypeKey}", [ $this, 'slugToId' ] );
 		$post->post_name = $post->ID;
 		wp_update_post( $post );
-		add_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ], 10, 3 );
+		add_action( "save_post_{$this->postTypeKey}", [ $this, 'slugToId' ], 10, 3 );
+	}
 
+	function updateMeta( $post_id, \WP_Post $post, $is_update ) {
 		if ( ! empty( $_POST['meta'] ) ) {
 			foreach ( $_POST['meta'] as $k => $v ) {
-				if ( strpos($k, "{$this->taxonomyKey}_") === 0 ) {
+				if ( strpos( $k, "{$this->taxonomyKey}_" ) === 0 ) {
 					update_post_meta( $post_id, $k, $v );
 				}
 			}
 		}
+	}
 
+	/**
+	 * 워드프레스의 기본 권한 모델로는 저장할 때 글을 특정 board에만 넣게 할 수가 없다.
+	 * 그래서 hook을 걸게 했다.
+	 *
+	 * @param $post_id
+	 * @param \WP_Post $post
+	 * @param $is_update
+	 */
+	function addBoardTermToPost( $post_id, \WP_Post $post, $is_update ) {
+		if ( ! empty( $_POST['tax_input'][ $this->taxonomyKey ] ) ) {
+			// 게시판 값이 입력돼 들어오면 그냥 넘긴다.
+			return;
+		}
+
+		if ( current_user_can( "manage_categories" ) ) {
+			// 게시판 값을 넣을 수 있는 사용자라면 그냥 넘긴다.
+			return;
+		}
+
+		$wp_user = wp_get_current_user();
+
+		foreach ( $wp_user->roles as $role ) {
+			if ( strpos( $role, "{$this->taxonomyKey}-writer-" ) === 0 ) {
+				$term_id = (int) str_replace( "{$this->taxonomyKey}-writer-", '', $role );
+				wp_add_object_terms( $post_id, $term_id, $this->taxonomyKey );
+
+				// 맨 앞의 게시판에 넣고 끊는다.
+				break;
+			}
+		}
 	}
 
 	function globalJsVariable() {
