@@ -477,8 +477,19 @@ class MytoryBoard {
 	 * @return \WP_Term[]
 	 */
 	public function getMyBoards() {
+		$wp_user = wp_get_current_user();
+
+	    if (array_intersect($wp_user->roles, ['administrator', 'editor']) or !$this->roleByBoard) {
+	        // 편집자 이상 혹은, 게시판별 권한 관리를 하지 않는다면 전체 게시판을 리턴한다.
+		    return ( new WP_Term_Query( [
+			    'taxonomy'   => $this->taxonomyKey,
+			    'hide_empty' => false,
+			    'number'     => 0,
+		    ] ) )->terms;
+        }
+
 		if ( $this->roleByBoard ) {
-			$wp_user = wp_get_current_user();
+
 			$boards  = [];
 			foreach ( $wp_user->roles as $role ) {
 				if ( strpos( $role, "{$this->taxonomyKey}-" ) === 0 ) {
@@ -488,12 +499,6 @@ class MytoryBoard {
 			}
 
 			return $boards;
-		} else {
-			return ( new WP_Term_Query( [
-				'taxonomy'   => $this->taxonomyKey,
-				'hide_empty' => false,
-				'number'     => 0,
-			] ) )->terms;
 		}
 	}
 }
