@@ -2,6 +2,8 @@
 
 namespace Mytory\Board;
 
+use WP_Term_Query;
+
 /**
  * @package           MytoryBoard
  * Plugin Name:       Mytory Board
@@ -33,7 +35,7 @@ class MytoryBoard {
 	/**
 	 * 게시판별로 권한 관리를 할지 결정.
 	 * 클라이언트단을 제어해 주지는 않는다. 관리자단 제어용 권한이다.
-     * 클라이언트단에서는 각자 알아서 코딩해야 한다.
+	 * 클라이언트단에서는 각자 알아서 코딩해야 한다.
 	 * @var bool
 	 */
 	public $roleByBoard = false;
@@ -82,7 +84,7 @@ class MytoryBoard {
 
 		if ( $this->roleByBoard ) {
 
-		    // 게시판을 만들 때마다 해당 게시판의 권한을 정의하는 role을 만듦.
+			// 게시판을 만들 때마다 해당 게시판의 권한을 정의하는 role을 만듦.
 			add_action( "create_{$this->taxonomyKey}", [ $this, 'addRole' ], 10, 2 );
 
 			// 게시판을 수정하면 role의 이름을 수정함.
@@ -92,15 +94,15 @@ class MytoryBoard {
 			add_action( "delete_{$this->taxonomyKey}", [ $this, 'removeRole' ], 10, 4 );
 
 			// 글쓸 때 사용자의 role에 따라 글의 게시판을 정함.
-            // 워드프레스는 게시판별 권한 모델을 갖고 있지 않기 때문에, 일반 사용자는 그냥 게시판을 선택할 수 없게 하는 수밖에 없음.
+			// 워드프레스는 게시판별 권한 모델을 갖고 있지 않기 때문에, 일반 사용자는 그냥 게시판을 선택할 수 없게 하는 수밖에 없음.
 			add_action( "save_post_{$this->postTypeKey}", [ $this, 'addBoardTermToPost' ], 10, 3 );
 		} else {
-		    // 게시판별로 롤을 관리하는 게 아닌 경우에.
+			// 게시판별로 롤을 관리하는 게 아닌 경우에.
 
-            // taxonomyLabel 글쓴이 Role을 추가함.
+			// taxonomyLabel 글쓴이 Role을 추가함.
 			$this->addDefaultRole();
 
-            // 게시글의 기본 게시판을 정함.
+			// 게시글의 기본 게시판을 정함.
 			add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 		}
 
@@ -432,6 +434,33 @@ class MytoryBoard {
 		}
 
 		return;
+	}
+
+	/**
+	 * 게시판별로 권한을 부여하는 옵션을 활성화한 상태라면 자신이 접근 가능한 게시판의 term 배열을 리턴한다.
+	 * 그렇지 않다면 전체 게시판의 term 배열을 리턴한다.
+     *
+     * @return \WP_Term[]
+	 */
+	public function getMyBoards() {
+		if ( $this->roleByBoard ) {
+			$wp_user = wp_get_current_user();
+			$boards  = [];
+			foreach ( $wp_user->roles as $role ) {
+				if ( strpos( $role, "{$this->taxonomyKey}-" ) === 0 ) {
+					$term_id  = preg_replace( "/{$this->taxonomyKey}-(writer|editor)-/", '', $role );
+					$boards[] = get_term( $term_id );
+				}
+			}
+
+			return $boards;
+		} else {
+			return ( new WP_Term_Query( [
+				'taxonomy'   => $this->taxonomyKey,
+				'hide_empty' => false,
+				'number'     => 0,
+			] ) )->terms;
+		}
 	}
 }
 
