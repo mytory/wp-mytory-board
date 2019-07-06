@@ -305,7 +305,7 @@ class MytoryBoard {
 	 */
 	public function addRole( $term_id, $tt_id ) {
 		$term = get_term( $term_id );
-		add_role( "board-writer-{$term_id}", "{$term->name} 회원", [
+		add_role( "{$this->taxonomyKey}-writer-{$term_id}", "{$term->name} 회원", [
 			'read'                                      => true,
 			'upload_files'                              => true,
 			"edit_{$this->postTypeKey}"                 => true,
@@ -315,7 +315,7 @@ class MytoryBoard {
 			"read_{$this->postTypeKey}"                 => true,
 			"delete_{$this->postTypeKey}"               => true,
 		] );
-		add_role( "board-editor-{$term_id}", "{$term->name} 편집자", get_role( 'editor' )->capabilities );
+		add_role( "{$this->taxonomyKey}-editor-{$term_id}", "{$term->name} 편집자", get_role( 'editor' )->capabilities );
 	}
 
 	/**
@@ -325,8 +325,8 @@ class MytoryBoard {
 	 * @param $tt_id
 	 */
 	public function updateRole( $term_id, $tt_id ) {
-		remove_role( "board-writer-{$term_id}" );
-		remove_role( "board-editor-{$term_id}" );
+		remove_role( "{$this->taxonomyKey}-writer-{$term_id}" );
+		remove_role( "{$this->taxonomyKey}-editor-{$term_id}" );
 		$this->addRole( $term_id, $tt_id );
 	}
 
@@ -337,8 +337,8 @@ class MytoryBoard {
 	 * @param array $object_ids
 	 */
 	public function removeRole( int $term_id, int $tt_id, $deleted_term, array $object_ids ) {
-		remove_role( "board-writer-{$term_id}" );
-		remove_role( "board-editor-{$term_id}" );
+		remove_role( "{$this->taxonomyKey}-writer-{$term_id}" );
+		remove_role( "{$this->taxonomyKey}-editor-{$term_id}" );
 	}
 
 	private function addDefaultRole() {
