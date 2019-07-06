@@ -236,21 +236,18 @@ class MytoryBoard {
 		}
 	}
 
-	function savePost( $post_id, $post, $is_update ) {
+	function savePost( $post_id, \WP_Post $post, $is_update ) {
+
 		remove_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ] );
 		$post->post_name = $post->ID;
-		wp_update_post( (array) $post );
+		wp_update_post( $post );
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ], 10, 3 );
 
 		if ( ! empty( $_POST['meta'] ) ) {
 			foreach ( $_POST['meta'] as $k => $v ) {
-
-				if ( mb_strcut( $k, 0, 13, 'utf-8' ) === "{$this->taxonomyKey}_" ) {
+				if ( strpos($k, "{$this->taxonomyKey}_") === 0 ) {
 					update_post_meta( $post_id, $k, $v );
-				} else {
-					update_post_meta( $post_id, "{$this->taxonomyKey}_{$k}", $v );
 				}
-
 			}
 		}
 
