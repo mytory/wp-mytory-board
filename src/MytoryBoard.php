@@ -33,6 +33,7 @@ class MytoryBoard {
 	/**
 	 * 게시판별로 권한 관리를 할지 결정.
 	 * 클라이언트단을 제어해 주지는 않는다. 관리자단 제어용 권한이다.
+     * 클라이언트단에서는 각자 알아서 코딩해야 한다.
 	 * @var bool
 	 */
 	public $roleByBoard = false;
@@ -60,6 +61,7 @@ class MytoryBoard {
 	 * @type string $postTypeKey : 게시글 post type key
 	 * @type string $postTypeLabel : 게시글 post type label
 	 * @type string $postTypeRewriteSlug : 게시글 url rewrite slug. Default 'b'
+	 * @type boolean $roleByBoard : 게시판별로 권한을 지정할 수 있게 함. Default false
 	 * }
 	 */
 	function __construct( $config = [] ) {
