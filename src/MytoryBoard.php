@@ -129,7 +129,7 @@ class MytoryBoard {
 
 
 	function registerBoardTaxonomy() {
-		$labels = array(
+		$labels = [
 			'name'                       => "{$this->taxonomyLabel}",
 			'singular_name'              => "{$this->taxonomyLabel}",
 			'search_items'               => "{$this->taxonomyLabel} 검색",
@@ -145,23 +145,23 @@ class MytoryBoard {
 			'choose_from_most_used'      => "많이 쓴 {$this->taxonomyLabel} 중 선택",
 			'not_found'                  => "{$this->taxonomyLabel}이 없습니다",
 			'menu_name'                  => "{$this->taxonomyLabel}",
-		);
+		];
 
-		$args = array(
+		$args = [
 			'labels'            => $labels,
 			'hierarchical'      => true,
 			'show_admin_column' => true,
-			'rewrite'           => array(
+			'rewrite'           => [
 				'slug'       => $this->taxonomyRewriteSlug,
 				'with_front' => false,
-			),
-		);
+			],
+		];
 
 		register_taxonomy( $this->taxonomyKey, $this->postTypeKey, $args );
 	}
 
 	function registerPostType() {
-		$labels = array(
+		$labels = [
 			'name'               => "{$this->postTypeLabel}",
 			'singular_name'      => "{$this->postTypeLabel}",
 			'add_new'            => "{$this->postTypeLabel} 추가",
@@ -175,7 +175,7 @@ class MytoryBoard {
 			'not_found_in_trash' => "휴지통에 {$this->postTypeLabel}이 없습니다",
 			'parent_item_colon'  => "부모 {$this->postTypeLabel}:",
 			'menu_name'          => "{$this->postTypeLabel}",
-		);
+		];
 
 		$args = [
 			'labels'       => $labels,
@@ -237,10 +237,10 @@ class MytoryBoard {
 	}
 
 	function savePost( $post_id, $post, $is_update ) {
-		remove_action( "save_post_{$this->postTypeKey}", array( $this, 'savePost' ) );
+		remove_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ] );
 		$post->post_name = $post->ID;
 		wp_update_post( (array) $post );
-		add_action( "save_post_{$this->postTypeKey}", array( $this, 'savePost' ), 10, 3 );
+		add_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ], 10, 3 );
 
 		if ( ! empty( $_POST['meta'] ) ) {
 			foreach ( $_POST['meta'] as $k => $v ) {
@@ -272,9 +272,9 @@ class MytoryBoard {
 		wp_verify_nonce( $_POST['nonce'], "{$this->taxonomyKey}-ajax-nonce" );
 		$post_id = $_POST['post_id'];
 		if ( $result = update_post_meta( $post_id, 'pageview', get_post_meta( $post_id, 'pageview', true ) + 1 ) ) {
-			echo json_encode( array( 'result' => 1, 'parameters' => $_POST ) );
+			echo json_encode( [ 'result' => 1, 'parameters' => $_POST ] );
 		} else {
-			echo json_encode( array( 'result' => $result, 'parameters' => $_POST ) );
+			echo json_encode( [ 'result' => $result, 'parameters' => $_POST ] );
 		}
 		wp_die();
 	}
@@ -374,7 +374,7 @@ class MytoryBoard {
 			return;
 		}
 
-		if ( ! in_array( $pagenow, array( 'upload.php', 'admin-ajax.php' ) ) ) {
+		if ( ! in_array( $pagenow, [ 'upload.php', 'admin-ajax.php' ] ) ) {
 			return;
 		}
 

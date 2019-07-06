@@ -38,7 +38,7 @@ if ( ! is_user_logged_in() and empty( $_POST['anonymous_password'] ) ) {
 	die( '비밀번호를 입력하세요.' );
 }
 
-$post_data = array(
+$post_data = [
 	'ID'           => $post_id,
 	'post_title'   => $post_title,
 	'post_content' => $_POST['post_content'],
@@ -46,7 +46,7 @@ $post_data = array(
 	'post_type'    => 'mytory_board_post',
 	'post_status'  => $_POST['post_status'],
 	'ping_status'  => false,
-);
+];
 
 if ( strstr( $post_data['post_content'], 'tpr0808' )
      or strstr( $post_data['post_title'], 'tpr0808' )

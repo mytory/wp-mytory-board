@@ -19,10 +19,10 @@ class Setup {
 		add_role(
 			'board_writer',
 			'게시판 글쓴이',
-			array(
+			[
 				'read'         => true,
 				'upload_files' => true,
-			)
+			]
 		);
 	}
 
