@@ -96,6 +96,8 @@ class MytoryBoard {
 			// 글쓸 때 사용자의 role에 따라 글의 게시판을 정함.
 			// 워드프레스는 게시판별 권한 모델을 갖고 있지 않기 때문에, 일반 사용자는 그냥 게시판을 선택할 수 없게 하는 수밖에 없음.
 			add_action( "save_post_{$this->postTypeKey}", [ $this, 'addBoardTermToPost' ], 10, 3 );
+
+			add_action( 'pre_get_posts', [ $this, 'onlyMyBoardPost' ] );
 		} else {
 			// 게시판별로 롤을 관리하는 게 아닌 경우에.
 
@@ -437,10 +439,42 @@ class MytoryBoard {
 	}
 
 	/**
+	 * 게시판별로 권할 관리를 하게 됐다면, 자기가 권한을 가진 게시판의 글만 봐야 한다.
+	 *
+	 * @param $wp_query_obj
+	 */
+	public function onlyMyBoardPost( $wp_query_obj ) {
+		global $current_user, $pagenow;
+
+		$is_borad_post_request = ( $wp_query_obj->get( 'post_type' ) === $this->postTypeKey );
+
+		if ( ! $is_borad_post_request ) {
+			return;
+		}
+
+		if ( ! is_a( $current_user, 'WP_User' ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'delete_pages' ) ) {
+			// 관리자 권한이 없다면
+			$wp_query_obj->set( 'tax_query', [
+				[
+					'taxonomy' => $this->taxonomyKey,
+					'field'    => 'term_id',
+					'terms'    => array_map( function ( $term ) {
+						return $term->term_id;
+					}, $this->getMyBoards() ),
+				]
+			] );
+		}
+	}
+
+	/**
 	 * 게시판별로 권한을 부여하는 옵션을 활성화한 상태라면 자신이 접근 가능한 게시판의 term 배열을 리턴한다.
 	 * 그렇지 않다면 전체 게시판의 term 배열을 리턴한다.
-     *
-     * @return \WP_Term[]
+	 *
+	 * @return \WP_Term[]
 	 */
 	public function getMyBoards() {
 		if ( $this->roleByBoard ) {
