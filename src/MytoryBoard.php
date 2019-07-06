@@ -71,8 +71,8 @@ class MytoryBoard {
 		add_action( 'admin_menu', [ $this, 'addSubMenu' ] );
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'savePost' ], 10, 3 );
 		add_action( 'wp_head', [ $this, 'globalJsVariable' ] );
-		add_action( "wp_ajax_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageview' ] );
-		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageview' ] );
+		add_action( "wp_ajax_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageView' ] );
+		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageView' ] );
 		add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 		add_action( 'pre_get_posts', [ $this, 'onlyMyMedia' ] );
 
@@ -265,7 +265,7 @@ class MytoryBoard {
         </script><?php
 	}
 
-	function increasePageview() {
+	function increasePageView() {
 		wp_verify_nonce( $_POST['nonce'], "{$this->taxonomyKey}-ajax-nonce" );
 		$post_id = $_POST['post_id'];
 		if ( $result = update_post_meta( $post_id, 'pageview', get_post_meta( $post_id, 'pageview', true ) + 1 ) ) {
