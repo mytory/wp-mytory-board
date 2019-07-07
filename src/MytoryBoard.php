@@ -84,9 +84,16 @@ class MytoryBoard {
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'slugToId' ], 10, 3 );
 
 		add_action( 'wp_head', [ $this, 'globalJsVariable' ] );
+		add_action( 'pre_get_posts', [ $this, 'onlyMyMedia' ] );
+
 		add_action( "wp_ajax_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageView' ] );
 		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_increase_pageview", [ $this, 'increasePageView' ] );
-		add_action( 'pre_get_posts', [ $this, 'onlyMyMedia' ] );
+
+		add_action( "wp_ajax_{$this->taxonomyKey}_like", [ $this, 'like' ] );
+		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_like", [ $this, 'like' ] );
+
+		add_action( "wp_ajax_{$this->taxonomyKey}_dislike", [ $this, 'dislike' ] );
+		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_dislike", [ $this, 'dislike' ] );
 
 		if ( $this->roleByBoard ) {
 
@@ -340,15 +347,51 @@ class MytoryBoard {
 	}
 
 	function increasePageView() {
-		wp_verify_nonce( $_POST['nonce'], "{$this->taxonomyKey}-ajax-nonce" );
+		if ( ! check_ajax_referer( "{$this->taxonomyKey}-ajax-nonce", false, false ) ) {
+			die();
+		}
+
 		$post_id   = $_POST['post_id'];
 		$new_value = get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true ) + 1;
 		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", $new_value ) ) {
-			echo json_encode( [ 'result' => 1, 'parameters' => $_POST ] );
+			echo json_encode( [ 'result' => 'success' ] );
 		} else {
-			echo json_encode( [ 'result' => $result, 'parameters' => $_POST ] );
+			echo json_encode( [ 'result' => 'fail' ] );
 		}
-		wp_die();
+
+		die();
+	}
+
+	function like() {
+		if ( ! check_ajax_referer( "{$this->taxonomyKey}-ajax-nonce", false, false ) ) {
+			die();
+		}
+
+		$post_id   = $_POST['post_id'];
+		$new_value = get_post_meta( $post_id, "_{$this->taxonomyKey}_like", true ) + 1;
+		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_like", $new_value ) ) {
+			echo json_encode( [ 'result' => 'success' ] );
+		} else {
+			echo json_encode( [ 'result' => 'fail' ] );
+		}
+
+		die();
+	}
+
+	function dislike() {
+		if ( ! check_ajax_referer( "{$this->taxonomyKey}-ajax-nonce", false, false ) ) {
+			die();
+		}
+
+		$post_id   = $_POST['post_id'];
+		$new_value = get_post_meta( $post_id, "_{$this->taxonomyKey}_dislike", true ) + 1;
+		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_dislike", $new_value ) ) {
+			echo json_encode( [ 'result' => 'success' ] );
+		} else {
+			echo json_encode( [ 'result' => 'fail' ] );
+		}
+
+		die();
 	}
 
 	public function getEditLink() {
@@ -563,15 +606,16 @@ class MytoryBoard {
 	}
 
 	public function publicBoardIds() {
-	    $ids = [];
+		$ids = [];
 		foreach ( $this->publicBoardSlugs as $public_board_slug ) {
 			$term = get_term_by( 'slug', $public_board_slug, $this->taxonomyKey );
-			if (!empty($term)) {
-			    $ids[] = $term->term_id;
-            }
-	    }
+			if ( ! empty( $term ) ) {
+				$ids[] = $term->term_id;
+			}
+		}
+
 		return $ids;
-    }
+	}
 }
 
 
