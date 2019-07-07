@@ -166,6 +166,14 @@ class MytoryBoardAdmin {
 
 	function save() {
 
+		if (wp_verify_nonce("{$this->mytory_board->taxonomyKey}_nonce") !== 1) {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '잘못된 호출입니다.',
+			] );
+			die();
+		}
+
 		if ( ! $this->checkOverallPermission() ) {
 			echo json_encode( [
 				'result'  => 'fail',
@@ -213,6 +221,15 @@ class MytoryBoardAdmin {
 	}
 
 	function trash() {
+
+		if (wp_verify_nonce("{$this->mytory_board->taxonomyKey}_nonce") !== 1) {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '잘못된 호출입니다.',
+			] );
+			die();
+		}
+
 		$this->checkOverallPermission();
 
 		if ( ! current_user_can( "delete_{$this->mytory_board->taxonomyKey}", $_POST['ID'] ) ) {
