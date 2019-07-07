@@ -212,9 +212,17 @@ class MytoryBoardAdmin {
 
 		if ( ! empty( $_POST['tax_input'] ) ) {
 			// tax_input 값이 있으면.
-			wp_set_object_terms( $post_id,
+			$affected_ids = wp_set_object_terms( $post_id,
 				$_POST['tax_input'][ $this->mytory_board->taxonomyKey ],
 				$this->mytory_board->taxonomyKey );
+			if ( is_wp_error( $affected_ids ) ) {
+				$wp_error = $affected_ids;
+				echo json_encode( [
+					'result'  => 'fail',
+					'message' => "글은 저장했지만, {$this->mytory_board->taxonomyLabel} 입력이 되지 않았습니다. 에러 메시지: " . $wp_error->get_error_message(),
+				] );
+				die();
+			}
 		}
 
 		echo json_encode( [
