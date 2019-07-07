@@ -258,13 +258,14 @@ class MytoryBoard {
 
 	/**
 	 * 게시판 없이 글을 저장하면, 기본 게시판에 넣는다. 단, 그러려면 기본 게시판 번호가 설정돼 있어야 한다.
+     * todo 게시판을 지정하고 저장하면 어떻게 할지 정해야 한다. 예컨대 tax_input 값이 들어온다면.
 	 *
 	 * @param $post_id
 	 */
 	function defaultMytoryBoard( $post_id ) {
-		if ( ! empty( $this->defaultBoardId ) and ! has_term( '', $this->taxonomyKey, $post_id ) ) {
-			wp_set_object_terms( $post_id, $this->defaultBoardId, $this->taxonomyKey );
-		}
+        if ( ! empty( $this->defaultBoardId ) and ! has_term( '', $this->taxonomyKey, $post_id ) ) {
+            wp_set_object_terms( $post_id, $this->defaultBoardId, $this->taxonomyKey );
+        }
 	}
 
 	function slugToId( $post_id, \WP_Post $post, $is_update ) {
