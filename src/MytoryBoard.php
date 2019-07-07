@@ -219,14 +219,15 @@ class MytoryBoard {
 			'show_ui'      => true,
 			'supports'     => [ 'title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions' ],
 			'capabilities' => [
-				'edit_post'            => "edit_{$this->postTypeKey}",
-				'read_post'            => "read_{$this->postTypeKey}",
-				'delete_post'          => "delete_{$this->postTypeKey}",
-				'edit_posts'           => "edit_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
-				'edit_published_posts' => "edit_published_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
-				'edit_others_posts'    => "edit_other_{$this->postTypeKey}",
-				'publish_posts'        => "publish_{$this->postTypeKey}",
-				'read_private_posts'   => "read_private_{$this->postTypeKey}",
+				'edit_post'              => "edit_{$this->postTypeKey}",
+				'read_post'              => "read_{$this->postTypeKey}",
+				'delete_post'            => "delete_{$this->postTypeKey}",
+				'delete_published_posts' => "delete_published_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+				'edit_posts'             => "edit_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+				'edit_published_posts'   => "edit_published_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+				'edit_others_posts'      => "edit_other_{$this->postTypeKey}",
+				'publish_posts'          => "publish_{$this->postTypeKey}",
+				'read_private_posts'     => "read_private_{$this->postTypeKey}",
 			],
 			'map_meta_cap' => true,
 		];
@@ -239,6 +240,7 @@ class MytoryBoard {
 			"edit_{$this->postTypeKey}",
 			"read_{$this->postTypeKey}",
 			"delete_{$this->postTypeKey}",
+			"delete_published_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
 			"edit_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
 			"edit_published_{$this->postTypeKey}" . "s", // s가 눈에 안 띌까봐 일부러 이렇게 씀.
 			"edit_other_{$this->postTypeKey}",
@@ -381,14 +383,15 @@ class MytoryBoard {
 		}
 
 		add_role( "{$this->taxonomyKey}-writer-{$term_id}", "{$term->name} 회원", [
-			'read'                                      => true,
-			'upload_files'                              => true,
-			"edit_{$this->postTypeKey}"                 => true,
-			"edit_{$this->postTypeKey}" . "s"           => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
-			"edit_published_{$this->postTypeKey}" . "s" => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
-			"publish_{$this->postTypeKey}"              => true,
-			"read_{$this->postTypeKey}"                 => true,
-			"delete_{$this->postTypeKey}"               => true,
+			'read'                                        => true,
+			'upload_files'                                => true,
+			"edit_{$this->postTypeKey}"                   => true,
+			"edit_{$this->postTypeKey}" . "s"             => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+			"edit_published_{$this->postTypeKey}" . "s"   => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+			"publish_{$this->postTypeKey}"                => true,
+			"read_{$this->postTypeKey}"                   => true,
+			"delete_{$this->postTypeKey}"                 => true,
+			"delete_published_{$this->postTypeKey}" . "s" => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
 		] );
 		add_role( "{$this->taxonomyKey}-editor-{$term_id}", "{$term->name} 편집자", get_role( 'editor' )->capabilities );
 	}
