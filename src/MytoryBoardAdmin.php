@@ -188,7 +188,7 @@ class MytoryBoardAdmin {
 
 			// 글 수정 권한 검사
 
-			if ( ! current_user_can( "edit_{$this->mytory_board->taxonomyKey}", $postarr['ID'] ) ) {
+			if ( ! current_user_can( "edit_{$this->mytory_board->postTypeKey}", $postarr['ID'] ) ) {
 				echo json_encode( [
 					'result'  => 'fail',
 					'message' => '권한이 없습니다.',
@@ -317,7 +317,7 @@ class MytoryBoardAdmin {
 				return false;
 			}
 
-			if ( ! current_user_can( "edit_{$this->mytory_board->taxonomyKey}" ) ) {
+			if ( ! current_user_can( "publish_{$this->mytory_board->postTypeKey}" ) ) {
 				return false;
 			}
 		}
