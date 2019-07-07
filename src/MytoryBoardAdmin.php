@@ -20,11 +20,11 @@ class MytoryBoardAdmin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'adminScripts' ] );
 		add_action( "wp_ajax_{$this->mytory_board->postTypeKey}_search_post", [ $this, 'searchPost' ] );
 
-		add_action( "wp_ajax_{$this->mytory_board->postTypeKey}_save", [ $this, 'save' ] );
-		add_action( "wp_ajax_nopriv_{$this->mytory_board->postTypeKey}_save", [ $this, 'save' ] );
+		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_save", [ $this, 'save' ] );
+		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_save", [ $this, 'save' ] );
 
-		add_action( "wp_ajax_{$this->mytory_board->postTypeKey}_trash", [ $this, 'trash' ] );
-		add_action( "wp_ajax_nopriv_{$this->mytory_board->postTypeKey}_trash", [ $this, 'trash' ] );
+		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
+		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 
 		if ( $mytory_board->roleByBoard ) {
 			add_action( 'admin_menu', [ $this, 'approveMemberMenu' ] );
