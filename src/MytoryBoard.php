@@ -274,10 +274,17 @@ class MytoryBoard {
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'slugToId' ], 10, 3 );
 	}
 
+	/**
+     * <code><input name="meta[_mytory_board_custom_key]"></code>로 값을 넘기면 postmeta에 저장한다.
+     * <code>mytory_board</code>는 당연히 <code>$taxonomyKey</code>로 대체해야 한다.
+	 * @param $post_id
+	 * @param \WP_Post $post
+	 * @param $is_update
+	 */
 	function updateMeta( $post_id, \WP_Post $post, $is_update ) {
 		if ( ! empty( $_POST['meta'] ) ) {
 			foreach ( $_POST['meta'] as $k => $v ) {
-				if ( strpos( $k, "{$this->taxonomyKey}_" ) === 0 ) {
+				if ( strpos( $k, "_{$this->taxonomyKey}_" ) === 0 ) {
 					update_post_meta( $post_id, $k, $v );
 				}
 			}
