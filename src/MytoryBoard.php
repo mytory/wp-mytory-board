@@ -510,22 +510,33 @@ class MytoryBoard {
 	 * 게시판별로 권한을 부여하는 옵션을 활성화한 상태라면 자신이 접근 가능한 게시판의 term 배열을 리턴한다.
 	 * 그렇지 않다면 전체 게시판의 term 배열을 리턴한다.
 	 *
+	 * @param bool $include_public_boards : 전체 공개 게시판 포함 여부
+	 *
 	 * @return \WP_Term[]
 	 */
-	public function getMyBoards() {
+	public function getMyBoards( $include_public_boards = false ) {
 		$wp_user = wp_get_current_user();
 
 		if ( array_intersect( $wp_user->roles, [ 'administrator', 'editor' ] ) or ! $this->roleByBoard ) {
 			// 편집자 이상 혹은, 게시판별 권한 관리를 하지 않는다면 전체 공개 게시판을 제외한 나머지 전체 게시판을 리턴한다.
-			return ( new WP_Term_Query( [
+			$args = [
 				'taxonomy'   => $this->taxonomyKey,
 				'hide_empty' => false,
 				'number'     => 0,
-				'exclude'    => array_map(function ($slug) {
-				    $term = get_term_by('slug', $slug, $this->taxonomyKey);
-				    return $term->term_id;
-                }, $this->publicBoardSlugs)
-			] ) )->terms;
+			];
+
+			if ( ! $include_public_boards ) {
+				$args['exclude'] = array_map( function ( $slug ) {
+					$term = get_term_by( 'slug', $slug, $this->taxonomyKey );
+					if ( $term ) {
+						return $term->term_id;
+					}
+
+					return null;
+				}, $this->publicBoardSlugs );
+			}
+
+			return ( new WP_Term_Query( $args ) )->terms;
 		}
 
 		if ( $this->roleByBoard ) {
@@ -535,6 +546,12 @@ class MytoryBoard {
 				if ( strpos( $role, "{$this->taxonomyKey}-" ) === 0 ) {
 					$term_id  = preg_replace( "/{$this->taxonomyKey}-(writer|editor)-/", '', $role );
 					$boards[] = get_term( $term_id );
+				}
+			}
+
+			if ( $include_public_boards ) {
+				foreach ( $this->publicBoardSlugs as $public_board_slug ) {
+					$boards[] = get_term_by( 'slug', $public_board_slug );
 				}
 			}
 
