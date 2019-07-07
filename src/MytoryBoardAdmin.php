@@ -166,7 +166,7 @@ class MytoryBoardAdmin {
 
 	function save() {
 
-		if ( wp_verify_nonce( "{$this->mytory_board->taxonomyKey}_nonce" ) !== 1 ) {
+		if ( ! check_ajax_referer( "{$this->mytory_board->taxonomyKey}-ajax-nonce", false, false ) ) {
 			echo json_encode( [
 				'result'  => 'fail',
 				'message' => '잘못된 호출입니다.',
@@ -235,7 +235,7 @@ class MytoryBoardAdmin {
 
 	function trash() {
 
-		if ( wp_verify_nonce( "{$this->mytory_board->taxonomyKey}_nonce" ) !== 1 ) {
+		if ( ! check_ajax_referer( "{$this->mytory_board->taxonomyKey}-ajax-nonce", false, false ) ) {
 			echo json_encode( [
 				'result'  => 'fail',
 				'message' => '잘못된 호출입니다.',
