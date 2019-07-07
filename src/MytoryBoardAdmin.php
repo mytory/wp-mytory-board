@@ -166,7 +166,7 @@ class MytoryBoardAdmin {
 
 	function save() {
 
-		if (wp_verify_nonce("{$this->mytory_board->taxonomyKey}_nonce") !== 1) {
+		if ( wp_verify_nonce( "{$this->mytory_board->taxonomyKey}_nonce" ) !== 1 ) {
 			echo json_encode( [
 				'result'  => 'fail',
 				'message' => '잘못된 호출입니다.',
@@ -217,12 +217,17 @@ class MytoryBoardAdmin {
 				$this->mytory_board->taxonomyKey );
 		}
 
+		echo json_encode( [
+			'result'      => 'success',
+			'message'     => '저장했습니다.',
+			'redirect_to' => get_permalink( $post_id ),
+		] );
 		die();
 	}
 
 	function trash() {
 
-		if (wp_verify_nonce("{$this->mytory_board->taxonomyKey}_nonce") !== 1) {
+		if ( wp_verify_nonce( "{$this->mytory_board->taxonomyKey}_nonce" ) !== 1 ) {
 			echo json_encode( [
 				'result'  => 'fail',
 				'message' => '잘못된 호출입니다.',
@@ -240,11 +245,11 @@ class MytoryBoardAdmin {
 			die();
 		}
 
-		if (wp_trash_post( $_POST['ID'] ) ) {
-			echo json_encode([
-				'result' => 'success',
+		if ( wp_trash_post( $_POST['ID'] ) ) {
+			echo json_encode( [
+				'result'  => 'success',
 				'message' => '삭제했습니다.',
-			]);
+			] );
 		} else {
 			echo json_encode( [
 				'result'  => 'fail',
