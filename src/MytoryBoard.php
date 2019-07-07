@@ -329,7 +329,7 @@ class MytoryBoard {
 		global $wp_query;
 		?>
         <script type="text/javascript">
-            window[<?= $this->taxonomyKey ?>] = {
+            window['<?= $this->taxonomyKey ?>'] = {
                 ajaxUrl: <?= json_encode( admin_url( "admin-ajax.php" ) ); ?>,
                 ajaxNonce: <?= json_encode( wp_create_nonce( "{$this->taxonomyKey}-ajax-nonce" ) ); ?>,
                 wpDebug: <?= defined( WP_DEBUG ) ? WP_DEBUG : 'false' ?>
