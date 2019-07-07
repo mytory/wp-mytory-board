@@ -40,6 +40,11 @@ class MytoryBoard {
 	 */
 	public $roleByBoard = false;
 
+	/**
+	 * @var array roleByBaord가 true인 경우 전체 공개 게시판의 슬러그를 적는다.
+	 */
+	public $publicBoardSlugs = [ 'public' ];
+
 
 	public $taxonomyKey = 'mytory_board';
 	public $taxonomyLabel = '게시판';
@@ -64,6 +69,7 @@ class MytoryBoard {
 	 * @type string $postTypeLabel : 게시글 post type label
 	 * @type string $postTypeRewriteSlug : 게시글 url rewrite slug. Default 'b'
 	 * @type boolean $roleByBoard : 게시판별로 권한을 지정할 수 있게 함. Default false
+	 * @type array $publicBoardSlugs : roleByBaord가 true인 경우 전체 공개 게시판의 슬러그를 적는다. Default ['public']
 	 * }
 	 */
 	function __construct( $config = [] ) {
@@ -116,6 +122,7 @@ class MytoryBoard {
 		$this->canAnonymousWriting = $config['canAnonymousWriting'] ?? $this->canAnonymousWriting;
 		$this->canSetNameByPost    = $config['canSetNameByPost'] ?? $this->canSetNameByPost;
 		$this->roleByBoard         = $config['roleByBoard'] ?? $this->roleByBoard;
+		$this->publicBoardSlugs    = $config['publicBoardSlugs'] ?? $this->publicBoardSlugs;
 
 		$this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
 		$this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
@@ -358,6 +365,11 @@ class MytoryBoard {
 	 */
 	public function addRole( $term_id, $tt_id ) {
 		$term = get_term( $term_id );
+
+		if ( in_array( $term->slug, $this->publicBoardSlugs ) ) {
+			return;
+		}
+
 		add_role( "{$this->taxonomyKey}-writer-{$term_id}", "{$term->name} 회원", [
 			'read'                                      => true,
 			'upload_files'                              => true,
@@ -378,6 +390,12 @@ class MytoryBoard {
 	 * @param $tt_id
 	 */
 	public function updateRole( $term_id, $tt_id ) {
+
+		$term = get_term( $term_id );
+		if ( in_array( $term->slug, $this->publicBoardSlugs ) ) {
+			return;
+		}
+
 		remove_role( "{$this->taxonomyKey}-writer-{$term_id}" );
 		remove_role( "{$this->taxonomyKey}-editor-{$term_id}" );
 		$this->addRole( $term_id, $tt_id );
@@ -390,6 +408,11 @@ class MytoryBoard {
 	 * @param array $object_ids
 	 */
 	public function removeRole( int $term_id, int $tt_id, $deleted_term, array $object_ids ) {
+		$term = get_term( $term_id );
+		if ( in_array( $term->slug, $this->publicBoardSlugs ) ) {
+			return;
+		}
+
 		remove_role( "{$this->taxonomyKey}-writer-{$term_id}" );
 		remove_role( "{$this->taxonomyKey}-editor-{$term_id}" );
 	}
@@ -458,13 +481,16 @@ class MytoryBoard {
 
 		if ( ! current_user_can( 'delete_pages' ) ) {
 			// 관리자 권한이 없다면
+
+            $boardSlugsCanRead = array_merge(array_map( function ( $term ) {
+	            return $term->slug;
+            }, $this->getMyBoards() ), $this->publicBoardSlugs);
+
 			$wp_query_obj->set( 'tax_query', [
 				[
 					'taxonomy' => $this->taxonomyKey,
-					'field'    => 'term_id',
-					'terms'    => array_map( function ( $term ) {
-						return $term->term_id;
-					}, $this->getMyBoards() ),
+					'field'    => 'slug',
+					'terms'    => $boardSlugsCanRead,
 				]
 			] );
 		}
@@ -479,18 +505,18 @@ class MytoryBoard {
 	public function getMyBoards() {
 		$wp_user = wp_get_current_user();
 
-	    if (array_intersect($wp_user->roles, ['administrator', 'editor']) or !$this->roleByBoard) {
-	        // 편집자 이상 혹은, 게시판별 권한 관리를 하지 않는다면 전체 게시판을 리턴한다.
-		    return ( new WP_Term_Query( [
-			    'taxonomy'   => $this->taxonomyKey,
-			    'hide_empty' => false,
-			    'number'     => 0,
-		    ] ) )->terms;
-        }
+		if ( array_intersect( $wp_user->roles, [ 'administrator', 'editor' ] ) or ! $this->roleByBoard ) {
+			// 편집자 이상 혹은, 게시판별 권한 관리를 하지 않는다면 전체 게시판을 리턴한다.
+			return ( new WP_Term_Query( [
+				'taxonomy'   => $this->taxonomyKey,
+				'hide_empty' => false,
+				'number'     => 0,
+			] ) )->terms;
+		}
 
 		if ( $this->roleByBoard ) {
 
-			$boards  = [];
+			$boards = [];
 			foreach ( $wp_user->roles as $role ) {
 				if ( strpos( $role, "{$this->taxonomyKey}-" ) === 0 ) {
 					$term_id  = preg_replace( "/{$this->taxonomyKey}-(writer|editor)-/", '', $role );
