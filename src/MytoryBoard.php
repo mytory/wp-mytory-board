@@ -561,6 +561,17 @@ class MytoryBoard {
 			return $boards;
 		}
 	}
+
+	public function publicBoardIds() {
+	    $ids = [];
+		foreach ( $this->publicBoardSlugs as $public_board_slug ) {
+			$term = get_term_by( 'slug', $public_board_slug, $this->taxonomyKey );
+			if (!empty($term)) {
+			    $ids[] = $term->term_id;
+            }
+	    }
+		return $ids;
+    }
 }
 
 
