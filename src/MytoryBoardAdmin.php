@@ -255,10 +255,24 @@ class MytoryBoardAdmin {
 			die();
 		}
 
+
+		$redirect_to = site_url();
+		if ( $this->mytory_board->roleByBoard ) {
+			$myBoards = $this->mytory_board->getMyBoards();
+			if ( ! empty( $myBoards ) ) {
+				$redirect_to = get_term_link( $myBoards[0] );
+			}
+		} else {
+			if ( $this->mytory_board->defaultBoardId ) {
+				$redirect_to = get_term_link( $this->mytory_board->defaultBoardId );
+			}
+		}
+
 		if ( wp_trash_post( $_POST['ID'] ) ) {
 			echo json_encode( [
-				'result'  => 'success',
-				'message' => '삭제했습니다.',
+				'result'      => 'success',
+				'message'     => '삭제했습니다.',
+				'redirect_to' => $redirect_to,``
 			] );
 		} else {
 			echo json_encode( [
