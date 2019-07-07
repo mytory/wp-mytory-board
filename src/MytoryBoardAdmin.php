@@ -272,7 +272,7 @@ class MytoryBoardAdmin {
 			echo json_encode( [
 				'result'      => 'success',
 				'message'     => '삭제했습니다.',
-				'redirect_to' => $redirect_to,``
+				'redirect_to' => $redirect_to,
 			] );
 		} else {
 			echo json_encode( [
@@ -280,6 +280,8 @@ class MytoryBoardAdmin {
 				'message' => '시스템 오류로 실패했습니다.',
 			] );
 		}
+
+		die();
 	}
 
 	/**
