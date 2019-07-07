@@ -247,7 +247,7 @@ class MytoryBoardAdmin {
 
 		$this->checkOverallPermission();
 
-		if ( ! current_user_can( "delete_{$this->mytory_board->taxonomyKey}", $_POST['ID'] ) ) {
+		if ( ! current_user_can( "delete_{$this->mytory_board->postTypeKey}", $_POST['ID'] ) ) {
 			echo json_encode( [
 				'result'  => 'fail',
 				'message' => '권한이 없습니다.',
