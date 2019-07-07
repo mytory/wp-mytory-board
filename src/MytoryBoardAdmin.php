@@ -56,7 +56,7 @@ class MytoryBoardAdmin {
 		] );
 
 		$applied_users = ( ( new \WP_User_Query( [
-			'meta_key'     => "_applied_{$this->mytory_board->taxonomyKey}",
+			'meta_key'     => "_{$this->mytory_board->taxonomyKey}_applied",
 			'meta_compare' => 'EXISTS',
 		] ) )->get_results() );
 
@@ -64,7 +64,7 @@ class MytoryBoardAdmin {
 
 		$user_applied_list = [];
 		foreach ( $applied_users as $applied_user ) {
-			$user_applied_list[ $applied_user->ID ] = get_user_meta( $applied_user->ID, "_applied_{$this->mytory_board->taxonomyKey}" );
+			$user_applied_list[ $applied_user->ID ] = get_user_meta( $applied_user->ID, "_{$this->mytory_board->taxonomyKey}_applied" );
 		}
 
 		$roles = get_editable_roles();
@@ -83,7 +83,7 @@ class MytoryBoardAdmin {
 		$result = wp_update_user( $user );
 
 		if ( ! is_wp_error( $result ) ) {
-			delete_user_meta($user_id, "_applied_{$this->mytory_board->taxonomyKey}", $board_id);
+			delete_user_meta($user_id, "_{$this->mytory_board->taxonomyKey}_applied", $board_id);
 			echo json_encode( [
 				'result'  => 'success',
 				'message' => '승인했습니다.',

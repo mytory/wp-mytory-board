@@ -275,8 +275,9 @@ class MytoryBoard {
 	}
 
 	/**
-     * <code><input name="meta[_mytory_board_custom_key]"></code>로 값을 넘기면 postmeta에 저장한다.
-     * <code>mytory_board</code>는 당연히 <code>$taxonomyKey</code>로 대체해야 한다.
+	 * <code><input name="meta[_mytory_board_custom_key]"></code>로 값을 넘기면 postmeta에 저장한다.
+	 * <code>mytory_board</code>는 당연히 <code>$taxonomyKey</code>로 대체해야 한다.
+	 *
 	 * @param $post_id
 	 * @param \WP_Post $post
 	 * @param $is_update
@@ -337,8 +338,9 @@ class MytoryBoard {
 
 	function increasePageView() {
 		wp_verify_nonce( $_POST['nonce'], "{$this->taxonomyKey}-ajax-nonce" );
-		$post_id = $_POST['post_id'];
-		if ( $result = update_post_meta( $post_id, 'pageview', get_post_meta( $post_id, 'pageview', true ) + 1 ) ) {
+		$post_id   = $_POST['post_id'];
+		$new_value = get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true ) + 1;
+		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", $new_value ) ) {
 			echo json_encode( [ 'result' => 1, 'parameters' => $_POST ] );
 		} else {
 			echo json_encode( [ 'result' => $result, 'parameters' => $_POST ] );
@@ -489,9 +491,9 @@ class MytoryBoard {
 		if ( ! current_user_can( 'delete_pages' ) ) {
 			// 관리자 권한이 없다면
 
-            $boardSlugsCanRead = array_merge(array_map( function ( $term ) {
-	            return $term->slug;
-            }, $this->getMyBoards() ), $this->publicBoardSlugs);
+			$boardSlugsCanRead = array_merge( array_map( function ( $term ) {
+				return $term->slug;
+			}, $this->getMyBoards() ), $this->publicBoardSlugs );
 
 			$wp_query_obj->set( 'tax_query', [
 				[
