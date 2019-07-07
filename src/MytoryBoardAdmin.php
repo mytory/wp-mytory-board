@@ -212,9 +212,11 @@ class MytoryBoardAdmin {
 
 		if ( ! empty( $_POST['tax_input'] ) ) {
 			// tax_input 값이 있으면.
-			$affected_ids = wp_set_object_terms( $post_id,
-				$_POST['tax_input'][ $this->mytory_board->taxonomyKey ],
-				$this->mytory_board->taxonomyKey );
+			$terms = array_map( function ( $term_id ) {
+				return (int) $term_id;
+			}, $_POST['tax_input'][ $this->mytory_board->taxonomyKey ] );
+
+			$affected_ids = wp_set_object_terms( $post_id, $terms, $this->mytory_board->taxonomyKey );
 			if ( is_wp_error( $affected_ids ) ) {
 				$wp_error = $affected_ids;
 				echo json_encode( [
