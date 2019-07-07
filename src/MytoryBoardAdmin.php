@@ -20,6 +20,12 @@ class MytoryBoardAdmin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'adminScripts' ] );
 		add_action( "wp_ajax_{$this->mytory_board->postTypeKey}_search_post", [ $this, 'searchPost' ] );
 
+		add_action( "wp_ajax_{$this->mytory_board->postTypeKey}_save", [ $this, 'save' ] );
+		add_action( "wp_ajax_nopriv_{$this->mytory_board->postTypeKey}_save", [ $this, 'save' ] );
+
+		add_action( "wp_ajax_{$this->mytory_board->postTypeKey}_trash", [ $this, 'trash' ] );
+		add_action( "wp_ajax_nopriv_{$this->mytory_board->postTypeKey}_trash", [ $this, 'trash' ] );
+
 		if ( $mytory_board->roleByBoard ) {
 			add_action( 'admin_menu', [ $this, 'approveMemberMenu' ] );
 			add_action( "wp_ajax_approve_member_{$this->mytory_board->taxonomyKey}", [ $this, 'approveMember' ] );
@@ -83,7 +89,7 @@ class MytoryBoardAdmin {
 		$result = wp_update_user( $user );
 
 		if ( ! is_wp_error( $result ) ) {
-			delete_user_meta($user_id, "_{$this->mytory_board->taxonomyKey}_applied", $board_id);
+			delete_user_meta( $user_id, "_{$this->mytory_board->taxonomyKey}_applied", $board_id );
 			echo json_encode( [
 				'result'  => 'success',
 				'message' => '승인했습니다.',
@@ -158,5 +164,132 @@ class MytoryBoardAdmin {
 		wp_die();
 	}
 
+	function save() {
 
+		if ( ! $this->checkOverallPermission() ) {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '권한이 없습니다.',
+			] );
+			die();
+		}
+
+		$postarr = $this->extractPostarr();
+
+		if ( ! empty( $postarr['ID'] ) ) {
+
+			// 글 수정 권한 검사
+
+			if ( ! current_user_can( "edit_{$this->mytory_board->taxonomyKey}", $postarr['ID'] ) ) {
+				echo json_encode( [
+					'result'  => 'fail',
+					'message' => '권한이 없습니다.',
+				] );
+				die();
+			}
+
+			$post_id = wp_update_post( $postarr, true );
+		} else {
+			$post_id = wp_insert_post( $postarr, true );
+		}
+
+		if ( is_wp_error( $post_id ) ) {
+			$wp_error = $post_id;
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => $wp_error->get_error_message(),
+			] );
+			die();
+		}
+
+		if ( ! empty( $_POST['tax_input'] ) ) {
+			// tax_input 값이 있으면.
+			wp_set_object_terms( $post_id,
+				$_POST['tax_input'][ $this->mytory_board->taxonomyKey ],
+				$this->mytory_board->taxonomyKey );
+		}
+
+		die();
+	}
+
+	function trash() {
+		$this->checkOverallPermission();
+
+		if ( ! current_user_can( "delete_{$this->mytory_board->taxonomyKey}", $_POST['ID'] ) ) {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '권한이 없습니다.',
+			] );
+			die();
+		}
+
+		if (wp_trash_post( $_POST['ID'] ) ) {
+			echo json_encode([
+				'result' => 'success',
+				'message' => '삭제했습니다.',
+			]);
+		} else {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '시스템 오류로 실패했습니다.',
+			] );
+		}
+	}
+
+	/**
+	 * $_POST에서 WP_Post에 필요한 키값만 추려서 $postarr를 구성한 뒤 리턴.
+	 *
+	 * @return array
+	 */
+	private function extractPostarr() {
+		$keys = [
+			'ID',
+			'post_author',
+			'post_content',
+			'post_content_filtered',
+			'post_title',
+			'post_excerpt',
+			'post_status',
+			'post_type',
+			'comment_status',
+			'ping_status',
+			'post_password',
+			'to_ping',
+			'pinged',
+			'post_parent',
+			'menu_order',
+			'guid',
+			'import_id',
+			'context'
+		];
+
+		$postdata = [];
+
+		foreach ( $_POST as $k => $v ) {
+			if ( in_array( $k, $keys ) ) {
+				$postdata[ $k ] = $v;
+			}
+		}
+
+		return $postdata;
+	}
+
+	/**
+	 * canAnonymousWriting 값이 false인 경우에, 로그인해 있는지, 글 작성 권한이 있는지 검사한다.
+	 *
+	 * @return bool
+	 */
+	private function checkOverallPermission() {
+		if ( ! $this->mytory_board->canAnonymousWriting ) {
+			if ( ! is_user_logged_in() ) {
+				return false;
+			}
+
+			if ( ! current_user_can( "edit_{$this->mytory_board->taxonomyKey}" ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 }
