@@ -352,7 +352,7 @@ class MytoryBoard {
 		}
 
 		$post_id   = $_POST['post_id'];
-		$new_value = get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true ) + 1;
+		$new_value = ((int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true )) + 1;
 		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", $new_value ) ) {
 			echo json_encode( [ 'result' => 'success' ] );
 		} else {
@@ -368,7 +368,7 @@ class MytoryBoard {
 		}
 
 		$post_id   = $_POST['post_id'];
-		$new_value = get_post_meta( $post_id, "_{$this->taxonomyKey}_like", true ) + 1;
+		$new_value = ((int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true )) + 1;
 		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_like", $new_value ) ) {
 			echo json_encode( [ 'result' => 'success' ] );
 		} else {
@@ -384,7 +384,7 @@ class MytoryBoard {
 		}
 
 		$post_id   = $_POST['post_id'];
-		$new_value = get_post_meta( $post_id, "_{$this->taxonomyKey}_dislike", true ) + 1;
+		$new_value = ((int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true )) + 1;
 		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_dislike", $new_value ) ) {
 			echo json_encode( [ 'result' => 'success' ] );
 		} else {
