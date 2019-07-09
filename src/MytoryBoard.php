@@ -116,6 +116,10 @@ class MytoryBoard {
 			add_action( "save_post_{$this->postTypeKey}", [ $this, 'addBoardTermToPost' ], 10, 3 );
 
 			add_action( 'pre_get_posts', [ $this, 'onlyMyBoardPost' ] );
+
+			add_filter( 'the_title', [ $this, 'titlePermission' ], 10, 2 );
+			add_filter( 'the_content', [ $this, 'contentPermission' ] );
+
 		} else {
 			// 게시판별로 롤을 관리하는 게 아닌 경우에.
 
@@ -667,7 +671,53 @@ class MytoryBoard {
 	}
 
 	public function getArchivePageOriginalTermSlug() {
-        return $this->archivePageOriginalTermSlug;
+		return $this->archivePageOriginalTermSlug;
+	}
+
+	public function titlePermission( $title, $id ) {
+
+		if ( is_single() ) {
+			$categories = get_the_terms( $id, $this->taxonomyKey );
+
+			if ( empty( $categories ) ) {
+				return $title;
+			}
+
+			$category_slugs = array_map( function ( $cat ) {
+				return $cat->slug;
+			}, $categories );
+
+			if ( ! array_intersect( $this->getMyBoardSlugs( true ), $category_slugs ) ) {
+				return "권한이 없습니다.";
+			}
+		}
+
+		return $title;
+	}
+
+	public function contentPermission( $content ) {
+
+		global $GLOBALS;
+
+		if ( is_single() ) {
+
+			$categories = get_the_terms( $GLOBALS['post']->ID, $this->taxonomyKey );
+
+			if ( empty( $categories ) ) {
+				return $content;
+			}
+
+			$category_slugs = array_map( function ( $cat ) {
+				return $cat->slug;
+			}, $categories );
+
+
+			if ( ! array_intersect( $this->getMyBoardSlugs( true ), $category_slugs ) ) {
+				return "권한이 없습니다.";
+			}
+		}
+
+		return $content;
 	}
 }
 
