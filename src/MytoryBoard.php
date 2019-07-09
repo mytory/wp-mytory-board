@@ -55,6 +55,7 @@ class MytoryBoard {
 	public $postTypeRewriteSlug = 'b';
 
 	private $archivePageOriginalTermSlug;
+	private $myBoards;
 
 	/**
 	 * MytoryBoard constructor.
@@ -574,6 +575,10 @@ class MytoryBoard {
 	 * @return \WP_Term[]
 	 */
 	public function getMyBoards( $include_public_boards = false ) {
+		if ( ! empty( $this->myBoards ) ) {
+			return $this->myBoards;
+		}
+
 		$wp_user = wp_get_current_user();
 
 		if ( array_intersect( $wp_user->roles, [ 'administrator', 'editor' ] ) or ! $this->roleByBoard ) {
@@ -595,7 +600,9 @@ class MytoryBoard {
 				}, $this->publicBoardSlugs );
 			}
 
-			return ( new WP_Term_Query( $args ) )->terms;
+			$this->myBoards = ( new WP_Term_Query( $args ) )->terms;
+
+			return $this->myBoards;
 		}
 
 		if ( $this->roleByBoard ) {
@@ -613,6 +620,8 @@ class MytoryBoard {
 					$boards[] = get_term_by( 'slug', $public_board_slug );
 				}
 			}
+
+			$this->myBoards = $boards;
 
 			return $boards;
 		}
