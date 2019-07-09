@@ -1,7 +1,7 @@
 {
   "name": "mytory/wp-mytory-board",
   "description": "워드프레스에 게시판 기능을 추가한다.",
-  "version": "0.9",
+  "version": "0.9.1",
   "keywords": [
     "wordpress",
     "board"
@@ -12,9 +12,16 @@
       "email": "mytory@gmail.com"
     }
   ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/gnoownow10/php-simple-html-dom-parser"
+    }
+  ],
   "type": "library",
   "require": {
-    "php": ">=7.0"
+    "php": ">=7.0",
+    "sunra/php-simple-html-dom-parser": "dev-master"
   },
   "autoload": {
     "psr-4": {
