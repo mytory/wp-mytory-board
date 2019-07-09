@@ -615,9 +615,10 @@ class MytoryBoard {
 
 			if ( $include_public_boards ) {
 				foreach ( $this->publicBoardSlugs as $public_board_slug ) {
-					$boards[] = get_term_by( 'slug', $public_board_slug );
+					$boards[] = get_term_by( 'slug', $public_board_slug, $this->taxonomyKey );
 				}
 			}
+
 
 			$this->myBoards = $boards;
 
