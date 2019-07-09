@@ -576,9 +576,6 @@ class MytoryBoard {
 	 * @return \WP_Term[]
 	 */
 	public function getMyBoards( $include_public_boards = false ) {
-		if ( ! empty( $this->myBoards ) ) {
-			return $this->myBoards;
-		}
 
 		$wp_user = wp_get_current_user();
 
