@@ -3,6 +3,7 @@
 namespace Mytory\Board;
 
 use Sunra\PhpSimple\HtmlDomParser;
+use WP_Term;
 use WP_Term_Query;
 
 /**
@@ -625,6 +626,18 @@ class MytoryBoard {
 
 			return $boards;
 		}
+	}
+
+	public function getMyBoardIds( $include_public_board = false ) {
+		return array_map( function ( WP_Term $board ) {
+			return $board->term_id;
+		}, $this->getMyBoards( $include_public_board ) );
+	}
+
+	public function getMyBoardSlugs( $include_public_board = false ) {
+		return array_map( function ( WP_Term $board ) {
+			return $board->slug;
+		}, $this->getMyBoards( $include_public_board ) );
 	}
 
 	public function publicBoardIds() {
