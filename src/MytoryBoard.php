@@ -305,13 +305,13 @@ class MytoryBoard {
 	}
 
 	function setThumbnail( $post_id, \WP_Post $post, $is_update ) {
-		if ( ! get_post_thumbnail_id( $post_id ) ) {
+		if ( $post->post_content and ! get_post_thumbnail_id( $post_id ) ) {
 			$dom = HtmlDomParser::str_get_html( $post->post_content );
 			foreach ( $dom->find( 'img' ) as $img ) {
-				if (preg_match('/wp-image-(?<attachment_id>[0-9]+)/', $img->class, $matches)) {
-                    set_post_thumbnail($post_id, $matches['attachment_id']);
-                    break;
-                }
+				if ( preg_match( '/wp-image-(?<attachment_id>[0-9]+)/', $img->class, $matches ) ) {
+					set_post_thumbnail( $post_id, $matches['attachment_id'] );
+					break;
+				}
 			}
 		}
 	}
