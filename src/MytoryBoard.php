@@ -54,6 +54,7 @@ class MytoryBoard {
 	public $postTypeLabel = '게시글';
 	public $postTypeRewriteSlug = 'b';
 
+	private $archivePageOriginalTermSlug;
 
 	/**
 	 * MytoryBoard constructor.
@@ -534,14 +535,12 @@ class MytoryBoard {
 	/**
 	 * 게시판별로 권할 관리를 하게 됐다면, 자기가 권한을 가진 게시판의 글만 봐야 한다.
 	 *
-	 * @param $wp_query_obj
+	 * @param \WP_Query $wp_query_obj
 	 */
-	public function onlyMyBoardPost( $wp_query_obj ) {
+	public function onlyMyBoardPost( \WP_Query $wp_query_obj ) {
 		global $current_user, $pagenow;
 
-		$is_borad_post_request = ( $wp_query_obj->get( 'post_type' ) === $this->postTypeKey );
-
-		if ( ! $is_borad_post_request ) {
+		if ( ! $this->isBoardPostRequest( $wp_query_obj ) ) {
 			return;
 		}
 
@@ -629,6 +628,26 @@ class MytoryBoard {
 		}
 
 		return $ids;
+	}
+
+	private function isBoardPostRequest( \WP_Query & $wp_query_obj ) {
+		if ( $wp_query_obj->get( 'post_type' ) === $this->postTypeKey ) {
+			return true;
+		}
+
+		if ( $wp_query_obj->get( $this->taxonomyKey ) ) {
+
+		    // query_var[$this->taxonomyKey]가 설정돼 있는 이 경우는 archive template 페이지가 로드된 경우다.
+            // 근데 이 때 액션을 실행하면 get_the_archive_title()이 이상한 값을 리턴한다.
+            // 그래서 원래의 term slug를 저장해 놨다가 나중에 사용할 용도로 저장한다.
+			$this->archivePageOriginalTermSlug = $wp_query_obj->get( $this->taxonomyKey );
+
+			return true;
+		}
+	}
+
+	public function getArchivePageOriginalTermSlug() {
+        return $this->archivePageOriginalTermSlug;
 	}
 }
 
