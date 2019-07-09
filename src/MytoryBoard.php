@@ -2,6 +2,7 @@
 
 namespace Mytory\Board;
 
+use Sunra\PhpSimple\HtmlDomParser;
 use WP_Term_Query;
 
 /**
@@ -82,6 +83,7 @@ class MytoryBoard {
 
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'updateMeta' ], 10, 3 );
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'slugToId' ], 10, 3 );
+		add_action( "save_post_{$this->postTypeKey}", [ $this, 'setThumbnail' ], 10, 3 );
 
 		add_action( 'wp_head', [ $this, 'globalJsVariable' ] );
 		add_action( 'pre_get_posts', [ $this, 'onlyMyMedia' ] );
@@ -302,6 +304,18 @@ class MytoryBoard {
 		}
 	}
 
+	function setThumbnail( $post_id, \WP_Post $post, $is_update ) {
+		if ( ! get_post_thumbnail_id( $post_id ) ) {
+			$dom = HtmlDomParser::str_get_html( $post->post_content );
+			foreach ( $dom->find( 'img' ) as $img ) {
+				if (preg_match('/wp-image-(?<attachment_id>[0-9]+)/', $img->class, $matches)) {
+                    set_post_thumbnail($post_id, $matches['attachment_id']);
+                    break;
+                }
+			}
+		}
+	}
+
 	/**
 	 * 워드프레스의 기본 권한 모델로는 저장할 때 글을 특정 board에만 넣게 할 수가 없다.
 	 * 그래서 hook을 걸게 했다.
@@ -352,7 +366,7 @@ class MytoryBoard {
 		}
 
 		$post_id   = $_POST['post_id'];
-		$new_value = ((int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true )) + 1;
+		$new_value = ( (int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true ) ) + 1;
 		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", $new_value ) ) {
 			echo json_encode( [ 'result' => 'success' ] );
 		} else {
@@ -368,7 +382,7 @@ class MytoryBoard {
 		}
 
 		$post_id   = $_POST['post_id'];
-		$new_value = ((int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true )) + 1;
+		$new_value = ( (int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true ) ) + 1;
 		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_like", $new_value ) ) {
 			echo json_encode( [ 'result' => 'success' ] );
 		} else {
@@ -384,7 +398,7 @@ class MytoryBoard {
 		}
 
 		$post_id   = $_POST['post_id'];
-		$new_value = ((int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true )) + 1;
+		$new_value = ( (int) get_post_meta( $post_id, "_{$this->taxonomyKey}_pageview", true ) ) + 1;
 		if ( $result = update_post_meta( $post_id, "_{$this->taxonomyKey}_dislike", $new_value ) ) {
 			echo json_encode( [ 'result' => 'success' ] );
 		} else {
