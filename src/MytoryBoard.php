@@ -661,9 +661,9 @@ class MytoryBoard {
 
 		if ( $wp_query_obj->get( $this->taxonomyKey ) ) {
 
-		    // query_var[$this->taxonomyKey]가 설정돼 있는 이 경우는 archive template 페이지가 로드된 경우다.
-            // 근데 이 때 액션을 실행하면 get_the_archive_title()이 이상한 값을 리턴한다.
-            // 그래서 원래의 term slug를 저장해 놨다가 나중에 사용할 용도로 저장한다.
+			// query_var[$this->taxonomyKey]가 설정돼 있는 이 경우는 archive template 페이지가 로드된 경우다.
+			// 근데 이 때 액션을 실행하면 get_the_archive_title()이 이상한 값을 리턴한다.
+			// 그래서 원래의 term slug를 저장해 놨다가 나중에 사용할 용도로 저장한다.
 			$this->archivePageOriginalTermSlug = $wp_query_obj->get( $this->taxonomyKey );
 
 			return true;
