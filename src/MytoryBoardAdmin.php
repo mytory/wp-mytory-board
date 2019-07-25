@@ -32,6 +32,9 @@ class MytoryBoardAdmin {
 		if ( $mytory_board->roleByBoard ) {
 			add_action( 'admin_menu', [ $this, 'approveMemberMenu' ] );
 			add_action( "wp_ajax_approve_member_{$this->mytory_board->taxonomyKey}", [ $this, 'approveMember' ] );
+
+			add_action( "wp_ajax_apply_{$this->mytory_board->taxonomyKey}", [ $this, 'apply' ] );
+			add_action( "wp_ajax_nopriv_apply_{$this->mytory_board->taxonomyKey}", [ $this, 'apply' ] );
 		}
 	}
 
@@ -353,16 +356,39 @@ class MytoryBoardAdmin {
 		$wp_term_query = new \WP_Term_Query( [
 			'taxonomy'   => $this->mytory_board->taxonomyKey,
 			'hide_empty' => false,
-			'orderby' => 'name',
+			'orderby'    => 'name',
 		] );
 
 		if ( $wp_term_query->terms ) {
 			foreach ( $wp_term_query->terms as $term ) {
-				$url = site_url( "/wp-admin/edit.php?post_type={$this->mytory_board->postTypeKey}&{$this->mytory_board->taxonomyKey}={$term->slug}" );
+				$url     = site_url( "/wp-admin/edit.php?post_type={$this->mytory_board->postTypeKey}&{$this->mytory_board->taxonomyKey}={$term->slug}" );
 				$views[] = "<a href='{$url}'>{$term->name} <span class='count'>({$term->count})</span></a>";
 			}
 		}
 
 		return $views;
+	}
+
+	public function apply() {
+		if ( ! check_ajax_referer( "{$this->mytory_board->taxonomyKey}-ajax-nonce", false, false ) ) {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '잘못된 호출입니다.',
+			] );
+			die();
+		}
+
+		if (add_user_meta(get_current_user_id(), "_{$this->mytory_board->taxonomyKey}_applied", $_POST['term_id'])) {
+			echo json_encode( [
+				'result'  => 'success',
+				'message' => '가입 신청 완료',
+			] );
+		} else {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '서버 에러',
+			] );
+		}
+		die();
 	}
 }
