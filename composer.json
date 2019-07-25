@@ -1,7 +1,7 @@
 {
   "name": "mytory/wp-mytory-board",
   "description": "워드프레스에 게시판 기능을 추가한다.",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "keywords": [
     "wordpress",
     "board"
