@@ -31,16 +31,8 @@ composer.json을 자신의 테마 루트에 만들고 아래를 참고해서 만
 
 이렇게 한 뒤 `composer install` 실행
 
-설치 후 해 줘야 할 것
------------------
+todo
+----
 
-### 설치 스크립트
-
-    php vendor/mytory/wp-mytory-board/install.php
-
-
-### 제거
-
-    php vendor/mytory/wp-mytory-board/uninstall.php
-
+- board 설정에 따라서 role을 더해 줘야 한다. role을 검사해서 없으면 더해주는 메뉴를 추가한다. 
 
