@@ -74,6 +74,9 @@ class MytoryBoardAdmin {
 
 		$applied_users = array_unique( $applied_users, SORT_REGULAR );
 
+		// 배열의 번호를 0, 1, 2로 순차적으로 재배열해야 한다. 안 그러면 json_encode했을 때 js object로 변환된다.
+		sort($applied_users);
+
 		$user_applied_list = [];
 		foreach ( $applied_users as $applied_user ) {
 			$user_applied_list[ $applied_user->ID ] = get_user_meta( $applied_user->ID, "_{$this->mytory_board->taxonomyKey}_applied" );
