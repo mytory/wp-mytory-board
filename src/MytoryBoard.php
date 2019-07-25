@@ -82,7 +82,6 @@ class MytoryBoard {
 		add_action( 'init', [ $this, 'registerPostType' ] );
 		add_action( 'admin_init', [ $this, 'boardCapabilities' ] );
 		add_action( 'init', [ $this, 'registerBoardTaxonomy' ] );
-		add_action( 'admin_menu', [ $this, 'addSubMenu' ] );
 
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'updateMeta' ], 10, 3 );
 		add_action( "save_post_{$this->postTypeKey}", [ $this, 'slugToId' ], 10, 3 );
@@ -143,32 +142,6 @@ class MytoryBoard {
 		$this->postTypeKey         = $config['postTypeKey'] ?? $this->postTypeKey;
 		$this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
 		$this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
-	}
-
-
-	function addSubMenu() {
-		$wp_term_query = new \WP_Term_Query( [
-			'taxonomy'   => $this->taxonomyKey,
-			'hide_empty' => false,
-		] );
-
-		if ( $wp_term_query->terms ) {
-			foreach ( $wp_term_query->terms as $term ) {
-				add_submenu_page(
-					"edit.php?post_type={$this->postTypeKey}",
-					"{$term->name} {$this->taxonomyLabel}",
-					"{$term->name} {$this->taxonomyLabel}",
-					'edit_others_posts',
-					"{$this->taxonomyKey}_{$term->term_id}",
-					function () use ( $term ) {
-						$url = site_url( "/wp-admin/edit.php?post_type={$this->postTypeKey}&{$this->taxonomyKey}={$term->slug}" );
-						?>
-                        <meta http-equiv="refresh" content="0;url=<?= $url ?>"/>
-						<?php
-					}
-				);
-			}
-		}
 	}
 
 

@@ -17,6 +17,9 @@ class MytoryBoardAdmin {
 		$this->mytory_board = $mytory_board;
 
 		add_action( 'admin_menu', [ $this, 'stickyPostsMenu' ] );
+
+		add_filter( "views_edit-{$this->mytory_board->postTypeKey}", [ $this, 'termsLinkInList' ] );
+
 		add_action( 'admin_enqueue_scripts', [ $this, 'adminScripts' ] );
 		add_action( "wp_ajax_{$this->mytory_board->postTypeKey}_search_post", [ $this, 'searchPost' ] );
 
@@ -339,5 +342,27 @@ class MytoryBoardAdmin {
 		}
 
 		return true;
+	}
+
+	public function termsLinkInList( $views ) {
+
+		/**
+		 * @var \WP_Term $term
+		 */
+
+		$wp_term_query = new \WP_Term_Query( [
+			'taxonomy'   => $this->mytory_board->taxonomyKey,
+			'hide_empty' => false,
+			'orderby' => 'name',
+		] );
+
+		if ( $wp_term_query->terms ) {
+			foreach ( $wp_term_query->terms as $term ) {
+				$url = site_url( "/wp-admin/edit.php?post_type={$this->mytory_board->postTypeKey}&{$this->mytory_board->taxonomyKey}={$term->slug}" );
+				$views[] = "<a href='{$url}'>{$term->name} <span class='count'>({$term->count})</span></a>";
+			}
+		}
+
+		return $views;
 	}
 }
