@@ -14,7 +14,7 @@
 <div class="wrap" id="app">
     <h1>게시판 가입 신청자</h1>
 
-    <p></p>
+    <p><!-- 공백용 --></p>
 
     <table v-if="appliedUsers.length" v-cloak class="wp-list-table widefat fixed striped">
         <thead>
@@ -54,9 +54,9 @@
 </div>
 
 <?php if ( WP_DEBUG ) { ?>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
 <?php } else { ?>
-    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10"></script>
 <?php } ?>
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
 <script
@@ -64,15 +64,15 @@
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
         crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
-<!-- Optional: include a polyfill for ES6 Promises for IE11 and Android browser -->
-<script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
 
 <script>
     (function () {
         var appliedUsers = <?= json_encode( $applied_users ); ?>;
         var userAppliedList = <?= json_encode( $user_applied_list ); ?>;
         var roles = <?= json_encode( $roles ); ?>;
-        var mytoryBoard = <?= json_encode( $this->mytory_board ) ?>
+        var mytoryBoard = <?= json_encode( $this->mytory_board ) ?>;
 
         new Vue({
             el: '#app',
