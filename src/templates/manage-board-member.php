@@ -87,11 +87,13 @@
                     var that = this;
                     var currentRoles = [];
                     _.each(_.values(user.roles), function (roleKey) {
-                        currentRoles.push({
-                            boardId: _.last(roleKey.split('-')),
-                            key: roleKey,
-                            name: that.roles[roleKey].name
-                        });
+                        if (typeof that.roles[roleKey] !== 'undefined') {
+                            currentRoles.push({
+                                boardId: _.last(roleKey.split('-')),
+                                key: roleKey,
+                                name: that.roles[roleKey].name
+                            });
+                        }
                     });
                     return currentRoles;
                 },
@@ -100,11 +102,13 @@
                     var appliedRoles = [];
                     _.forEach(this.userAppliedList[user.ID], function (boardId) {
                         var roleKey = that.mytoryBoard.taxonomyKey + '-writer-' + boardId;
-                        appliedRoles.push({
-                            boardId: boardId,
-                            key: roleKey,
-                            name: that.roles[roleKey].name
-                        });
+                        if (typeof that.roles[roleKey] !== 'undefined') {
+                            appliedRoles.push({
+                                boardId: boardId,
+                                key: roleKey,
+                                name: that.roles[roleKey].name
+                            });
+                        }
                     });
                     return appliedRoles;
                 },
