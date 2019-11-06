@@ -172,6 +172,12 @@ class MytoryBoard {
 				'slug'       => $this->taxonomyRewriteSlug,
 				'with_front' => false,
 			],
+            'capabilities' => [
+                'manage_terms' => 'manage_options', //by default only admin
+                'edit_terms' => 'manage_options',
+                'delete_terms' => 'manage_options',
+                'assign_terms' => "edit_{$this->postTypeKey}" . "s", // s 빼먹을까 봐 일부터 띄어 씀.
+            ]
 		];
 
 		register_taxonomy( $this->taxonomyKey, $this->postTypeKey, $args );
@@ -232,6 +238,7 @@ class MytoryBoard {
 			"edit_other_{$this->postTypeKey}",
 			"publish_{$this->postTypeKey}",
 			"read_private_{$this->postTypeKey}",
+            "edit_{$this->taxonomyKey}",
 		];
 
 		$roles = [ 'administrator', 'editor' ];
@@ -425,6 +432,7 @@ class MytoryBoard {
 			"publish_{$this->postTypeKey}"                => true,
 			"read_{$this->postTypeKey}"                   => true,
 			"delete_{$this->postTypeKey}"                 => true,
+			"delete_published_{$this->postTypeKey}" . "s" => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
 			"delete_published_{$this->postTypeKey}" . "s" => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
 		] );
 		add_role( "{$this->taxonomyKey}-editor-{$term_id}", "{$term->name} 편집자", get_role( 'editor' )->capabilities );
