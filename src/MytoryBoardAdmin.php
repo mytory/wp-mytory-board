@@ -52,8 +52,8 @@ class MytoryBoardAdmin {
 	function approveMemberMenu() {
 		add_submenu_page(
 			"edit.php?post_type={$this->mytory_board->postTypeKey}",
-			'게시판 신청 승인',
-			'게시판 신청 승인',
+			$this->mytory_board->taxonomyLabel . ' 신청 승인',
+			$this->mytory_board->taxonomyLabel . ' 신청 승인',
 			'edit_others_posts',
 			"manage-board-member",
 			[ $this, 'approveMemberView' ]
