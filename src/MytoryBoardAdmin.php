@@ -105,9 +105,8 @@ class MytoryBoardAdmin {
 		$user = new \WP_User( $user_id );
 		$user->add_role( $role_key );
 
-		$result = wp_update_user( $user );
 
-		if ( ! is_wp_error( $result ) ) {
+		if ( $user->has_cap( $role_key ) ) {
 			delete_user_meta( $user_id, "_{$this->mytory_board->taxonomyKey}_applied", $board_id );
 			echo json_encode( [
 				'result'  => 'success',
@@ -115,10 +114,9 @@ class MytoryBoardAdmin {
 				'user'    => $user,
 			] );
 		} else {
-			$wp_error = $result;
 			echo json_encode( [
 				'result'  => 'fail',
-				'message' => $wp_error->get_error_message(),
+				'message' => '알 수 없는 이유로 승인이 실패했습니다.',
 				'user'    => $user,
 			] );
 		}
