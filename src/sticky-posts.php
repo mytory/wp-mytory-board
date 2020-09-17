@@ -30,24 +30,17 @@
 
     <form method="post">
 		<?php
-		wp_nonce_field( 'mytory-board-sticky-posts' );
+		wp_nonce_field( "{$this->mytory_board->taxonomyKey}-sticky-posts" );
 		?>
         <input class="text-regular" type="hidden" name="sticky_posts"
                value="<?= implode( ',', get_option( 'sticky_posts' ) ) ?>">
 
         <div class="card" id="selected">
 			<?php
-			$sticky_post_ids = get_option( 'sticky_posts' );
-			if ( ! empty( $sticky_post_ids ) ) {
-				global $wp_query;
-				$wp_query = new \WP_Query( [
-					'post__in'       => get_option( 'sticky_posts' ),
-					'post_type'      => 'any',
-					'posts_per_page' => - 1,
-				] );
-				while ( have_posts() ): the_post();
-					include 'template-row.php';
-				endwhile;
+            global $post;
+			foreach ($this->getStickyPosts() as $sticky_post) {
+			    $post = $sticky_post;
+			    include 'template-row.php';
 			} ?>
         </div>
         <p>고정글은 출력될 때 최근 글이 위로 나옵니다.</p>
