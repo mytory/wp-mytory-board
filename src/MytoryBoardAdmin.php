@@ -2,6 +2,8 @@
 
 namespace Mytory\Board;
 
+use WP_User;
+
 /**
  * Created by PhpStorm.
  * User: mytory
@@ -10,6 +12,9 @@ namespace Mytory\Board;
  */
 class MytoryBoardAdmin {
 
+	/**
+	 * @var MytoryBoard
+	 */
 	private $mytory_board;
 
 	function __construct( MytoryBoard $mytory_board ) {
@@ -28,6 +33,9 @@ class MytoryBoardAdmin {
 
 		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
+
+		add_action( 'edit_user_profile', [ $this, 'additionalRoleForm' ], 10, 1 );
+		add_action( 'profile_update', [ $this, 'profileUpdate' ], 10, 2 );
 
 		if ( $mytory_board->roleByBoard ) {
 			add_action( 'admin_menu', [ $this, 'approveMemberMenu' ] );
@@ -393,5 +401,27 @@ class MytoryBoardAdmin {
 			] );
 		}
 		die();
+	}
+
+	public function additionalRoleForm( $wp_user ) {
+		// Board가 여러 개라도 권한 폼은 한 번만 나와야 한다.
+		require_once 'templates/additional-role-form.php';
+	}
+
+	public function profileUpdate( $user_id, $old_user_data ) {
+		global $wp_roles;
+		$wp_user = new WP_User( $user_id );
+
+		foreach ( $wp_roles->roles as $role_key => $role ) {
+			if ( strstr( $role_key, $this->mytory_board->taxonomyKey ) ) {
+				$wp_user->remove_role( $role_key );
+			}
+		}
+
+		if ( ! empty( $_POST['branch_role_key'] ) ) {
+			foreach ( $_POST['branch_role_key'] as $branch_role_key ) {
+				$wp_user->add_role( $branch_role_key );
+			}
+		}
 	}
 }
