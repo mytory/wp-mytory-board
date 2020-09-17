@@ -34,8 +34,10 @@ class MytoryBoardAdmin {
 		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 
-		add_action( 'edit_user_profile', [ $this, 'additionalRoleForm' ], 10, 1 );
-		add_action( 'profile_update', [ $this, 'profileUpdate' ], 10, 2 );
+		if ( $this->mytory_board->roleByBoard ) {
+			add_action( 'edit_user_profile', [ $this, 'additionalRoleForm' ], 10, 1 );
+			add_action( 'profile_update', [ $this, 'profileUpdate' ], 10, 2 );
+		}
 
 		if ( $mytory_board->roleByBoard ) {
 			add_action( 'admin_menu', [ $this, 'approveMemberMenu' ] );
@@ -83,7 +85,7 @@ class MytoryBoardAdmin {
 		$applied_users = array_unique( $applied_users, SORT_REGULAR );
 
 		// 배열의 번호를 0, 1, 2로 순차적으로 재배열해야 한다. 안 그러면 json_encode했을 때 js object로 변환된다.
-		sort($applied_users);
+		sort( $applied_users );
 
 		$user_applied_list = [];
 		foreach ( $applied_users as $applied_user ) {
@@ -389,7 +391,7 @@ class MytoryBoardAdmin {
 			die();
 		}
 
-		if (add_user_meta(get_current_user_id(), "_{$this->mytory_board->taxonomyKey}_applied", $_POST['term_id'])) {
+		if ( add_user_meta( get_current_user_id(), "_{$this->mytory_board->taxonomyKey}_applied", $_POST['term_id'] ) ) {
 			echo json_encode( [
 				'result'  => 'success',
 				'message' => '가입 신청 완료',
