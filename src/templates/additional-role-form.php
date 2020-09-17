@@ -2,7 +2,6 @@
 /**
  * @var WP_User $wp_user
  */
-global $branchBoard;
 ?>
 <h2>지회 설정</h2>
 <table class="form-table">
@@ -21,7 +20,7 @@ global $branchBoard;
 			$branch_roles = [];
 
 			foreach ( $wp_roles->roles as $role_key => $role ) {
-				if ( ! strstr( $role_key, $branchBoard->taxonomyKey ) ) {
+				if ( ! strstr( $role_key, $this->mytory_board->taxonomyKey ) ) {
 					continue;
 				}
 				$branch_roles[] = [
