@@ -138,8 +138,8 @@ class MytoryBoardAdmin {
 		$result_message = "";
 		if ( ! empty( $_POST ) ) {
 			wp_verify_nonce( $_POST['_wpnonce'], "{$this->mytory_board->taxonomyKey}-sticky-posts" );
-			$diff = array_diff( get_option( 'sticky_posts' ), explode( ',', $_POST['sticky_posts'] ) );
-			if ( update_option( 'sticky_posts', explode( ',', $_POST['sticky_posts'] ) ) ) {
+			$diff = array_diff( (get_option( "{$this->mytory_board->taxonomyKey}-sticky-posts" ) ?: []), explode( ',', $_POST['sticky_posts'] ) );
+			if ( update_option( "{$this->mytory_board->taxonomyKey}-sticky-posts", explode( ',', $_POST['sticky_posts'] ) ) ) {
 				$result_message = '저장했습니다.';
 			} elseif ( empty( $diff ) ) {
 				$result_message = '추가/제거한 글이 없어서 저장하지 않았습니다.';

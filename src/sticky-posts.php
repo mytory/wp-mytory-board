@@ -32,8 +32,9 @@
 		<?php
 		wp_nonce_field( "{$this->mytory_board->taxonomyKey}-sticky-posts" );
 		?>
+
         <input class="text-regular" type="hidden" name="sticky_posts"
-               value="<?= implode( ',', get_option( 'sticky_posts' ) ) ?>">
+               value="<?= implode( ',', (get_option( "{$this->mytory_board->taxonomyKey}-sticky-posts" ) ?: []) ) ?>">
 
         <div class="card" id="selected">
 			<?php
