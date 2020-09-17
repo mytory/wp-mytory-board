@@ -38,7 +38,7 @@
         <div class="card" id="selected">
 			<?php
             global $post;
-			foreach ($this->getStickyPosts() as $sticky_post) {
+			foreach ($this->mytory_board->getStickyPosts() as $sticky_post) {
 			    $post = $sticky_post;
 			    include 'template-row.php';
 			} ?>
