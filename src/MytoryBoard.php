@@ -47,6 +47,11 @@ class MytoryBoard {
 	 */
 	public $publicBoardSlugs = [ 'public' ];
 
+	/**
+	 * @var array roleByBaord가 true인 경우 회원 공개 게시판의 슬러그를 적는다.
+	 */
+	public $memberBoardSlugs = [ 'member' ];
+
 
 	public $taxonomyKey = 'mytory_board';
 	public $taxonomyLabel = '게시판';
@@ -74,6 +79,7 @@ class MytoryBoard {
 	 * @type string $postTypeRewriteSlug : 게시글 url rewrite slug. Default 'b'
 	 * @type boolean $roleByBoard : 게시판별로 권한을 지정할 수 있게 함. Default false
 	 * @type array $publicBoardSlugs : roleByBaord가 true인 경우 전체 공개 게시판의 슬러그를 적는다. Default ['public']
+	 * @type array $memberBoardSlugs : roleByBaord가 true인 경우 회원 공개 게시판의 슬러그를 적는다. Default ['member']
 	 * }
 	 */
 	function __construct( $config = [] ) {
@@ -135,6 +141,7 @@ class MytoryBoard {
 		$this->canSetNameByPost    = $config['canSetNameByPost'] ?? $this->canSetNameByPost;
 		$this->roleByBoard         = $config['roleByBoard'] ?? $this->roleByBoard;
 		$this->publicBoardSlugs    = $config['publicBoardSlugs'] ?? $this->publicBoardSlugs;
+		$this->memberBoardSlugs    = $config['memberBoardSlugs'] ?? $this->memberBoardSlugs;
 
 		$this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
 		$this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
@@ -423,6 +430,10 @@ class MytoryBoard {
 			return;
 		}
 
+		if ( in_array( $term->slug, $this->memberBoardSlugs ) ) {
+			return;
+		}
+
 		add_role( "{$this->taxonomyKey}-writer-{$term_id}", "{$term->name} 회원", [
 			'read'                                        => true,
 			'upload_files'                                => true,
@@ -451,6 +462,10 @@ class MytoryBoard {
 			return;
 		}
 
+		if ( in_array( $term->slug, $this->memberBoardSlugs ) ) {
+			return;
+		}
+
 		remove_role( "{$this->taxonomyKey}-writer-{$term_id}" );
 		remove_role( "{$this->taxonomyKey}-editor-{$term_id}" );
 		$this->addRole( $term_id, $tt_id );
@@ -465,6 +480,10 @@ class MytoryBoard {
 	public function removeRole( int $term_id, int $tt_id, $deleted_term, array $object_ids ) {
 		$term = get_term( $term_id );
 		if ( in_array( $term->slug, $this->publicBoardSlugs ) ) {
+			return;
+		}
+
+		if ( in_array( $term->slug, $this->memberBoardSlugs ) ) {
 			return;
 		}
 
@@ -535,9 +554,10 @@ class MytoryBoard {
 		if ( ! current_user_can( 'delete_pages' ) ) {
 			// 관리자 권한이 없다면
 
+            // 권한을 가진 게시판 + 전체 공개 게시판 + 회원 공개 게시판
 			$boardSlugsCanRead = array_merge( array_map( function ( $term ) {
 				return $term->slug;
-			}, $this->getMyBoards() ), $this->publicBoardSlugs );
+			}, $this->getMyBoards() ), $this->publicBoardSlugs, $this->memberBoardSlugs );
 
 			$wp_query_obj->set( 'tax_query', [
 				[
@@ -553,11 +573,11 @@ class MytoryBoard {
 	 * 게시판별로 권한을 부여하는 옵션을 활성화한 상태라면 자신이 접근 가능한 게시판의 term 배열을 리턴한다.
 	 * 그렇지 않다면 전체 게시판의 term 배열을 리턴한다.
 	 *
-	 * @param bool $include_public_boards : 전체 공개 게시판 포함 여부
+	 * @param bool $include_public_and_member_boards : 전체 공개 게시판, 회원 공개 게시판 포함 여부
 	 *
 	 * @return \WP_Term[]
 	 */
-	public function getMyBoards( $include_public_boards = false ) {
+	public function getMyBoards( $include_public_and_member_boards = false ) {
 
 		$wp_user = wp_get_current_user();
 
@@ -569,7 +589,7 @@ class MytoryBoard {
 				'number'     => 0,
 			];
 
-			if ( ! $include_public_boards ) {
+			if ( ! $include_public_and_member_boards ) {
 				$args['exclude'] = array_map( function ( $slug ) {
 					$term = get_term_by( 'slug', $slug, $this->taxonomyKey );
 					if ( $term ) {
@@ -577,7 +597,7 @@ class MytoryBoard {
 					}
 
 					return null;
-				}, $this->publicBoardSlugs );
+				}, array_merge( $this->publicBoardSlugs, $this->memberBoardSlugs ) );
 			}
 
 			$this->myBoards = ( new WP_Term_Query( $args ) )->terms;
@@ -595,9 +615,9 @@ class MytoryBoard {
 				}
 			}
 
-			if ( $include_public_boards ) {
-				foreach ( $this->publicBoardSlugs as $public_board_slug ) {
-					$boards[] = get_term_by( 'slug', $public_board_slug, $this->taxonomyKey );
+			if ( $include_public_and_member_boards ) {
+				foreach ( array_merge($this->publicBoardSlugs, $this->memberBoardSlugs) as $slug ) {
+					$boards[] = get_term_by( 'slug', $slug, $this->taxonomyKey );
 				}
 			}
 
@@ -607,16 +627,16 @@ class MytoryBoard {
 		}
 	}
 
-	public function getMyBoardIds( $include_public_board = false ) {
+	public function getMyBoardIds( $include_public_and_member_boards = false ) {
 		return array_map( function ( WP_Term $board ) {
 			return $board->term_id;
-		}, $this->getMyBoards( $include_public_board ) );
+		}, $this->getMyBoards( $include_public_and_member_boards ) );
 	}
 
-	public function getMyBoardSlugs( $include_public_board = false ) {
+	public function getMyBoardSlugs( $include_public_and_member_boards = false ) {
 		return array_map( function ( WP_Term $board ) {
 			return $board->slug;
-		}, $this->getMyBoards( $include_public_board ) );
+		}, $this->getMyBoards( $include_public_and_member_boards ) );
 	}
 
 	public function publicBoardIds() {
@@ -630,6 +650,16 @@ class MytoryBoard {
 
 		return $ids;
 	}
+
+	public function memberBoardIds() {
+		$ids = [];
+		foreach ( $this->memberBoardSlugs as $member_board_slug ) {
+			$term = get_term_by( 'slug', $member_board_slug, $this->taxonomyKey );
+			if ( ! empty( $term ) ) {
+				$ids[] = $term->term_id;
+			}
+		}
+    }
 
 	private function isBoardPostRequest( \WP_Query & $wp_query_obj ) {
 		if ( $wp_query_obj->get( 'post_type' ) === $this->postTypeKey ) {
