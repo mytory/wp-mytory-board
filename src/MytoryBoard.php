@@ -651,6 +651,9 @@ class MytoryBoard {
 		return $ids;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function memberBoardIds() {
 		$ids = [];
 		foreach ( $this->memberBoardSlugs as $member_board_slug ) {
@@ -659,6 +662,8 @@ class MytoryBoard {
 				$ids[] = $term->term_id;
 			}
 		}
+
+		return $ids;
     }
 
 	private function isBoardPostRequest( \WP_Query & $wp_query_obj ) {
