@@ -666,6 +666,14 @@ class MytoryBoard {
 		return $ids;
     }
 
+	/**
+     * 공개 게시판과 회원 게시판의 아이디를 리턴한다.
+	 * @return array
+	 */
+    public function publicAndMemberBoardIds() {
+	    return array_merge($this->publicBoardIds(), $this->memberBoardIds());
+    }
+
 	private function isBoardPostRequest( \WP_Query & $wp_query_obj ) {
 		if ( $wp_query_obj->get( 'post_type' ) === $this->postTypeKey ) {
 			return true;
