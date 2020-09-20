@@ -2,6 +2,8 @@
 
 namespace Mytory\Board;
 
+use WP_User;
+
 /**
  * Created by PhpStorm.
  * User: mytory
@@ -10,6 +12,9 @@ namespace Mytory\Board;
  */
 class MytoryBoardAdmin {
 
+	/**
+	 * @var MytoryBoard
+	 */
 	private $mytory_board;
 
 	function __construct( MytoryBoard $mytory_board ) {
@@ -29,6 +34,11 @@ class MytoryBoardAdmin {
 		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 
+		if ( $this->mytory_board->roleByBoard ) {
+			add_action( 'edit_user_profile', [ $this, 'additionalRoleForm' ], 10, 1 );
+			add_action( 'profile_update', [ $this, 'profileUpdate' ], 10, 2 );
+		}
+
 		if ( $mytory_board->roleByBoard ) {
 			add_action( 'admin_menu', [ $this, 'approveMemberMenu' ] );
 			add_action( "wp_ajax_approve_member_{$this->mytory_board->taxonomyKey}", [ $this, 'approveMember' ] );
@@ -44,7 +54,7 @@ class MytoryBoardAdmin {
 			'고정글',
 			'고정글',
 			'edit_others_posts',
-			"sticky-posts",
+			"{$this->mytory_board->taxonomyKey}-sticky-posts",
 			[ $this, 'stickyPosts' ]
 		);
 	}
@@ -52,8 +62,8 @@ class MytoryBoardAdmin {
 	function approveMemberMenu() {
 		add_submenu_page(
 			"edit.php?post_type={$this->mytory_board->postTypeKey}",
-			'게시판 신청 승인',
-			'게시판 신청 승인',
+			$this->mytory_board->taxonomyLabel . ' 신청 승인',
+			$this->mytory_board->taxonomyLabel . ' 신청 승인',
 			'edit_others_posts',
 			"manage-board-member",
 			[ $this, 'approveMemberView' ]
@@ -75,7 +85,7 @@ class MytoryBoardAdmin {
 		$applied_users = array_unique( $applied_users, SORT_REGULAR );
 
 		// 배열의 번호를 0, 1, 2로 순차적으로 재배열해야 한다. 안 그러면 json_encode했을 때 js object로 변환된다.
-		sort($applied_users);
+		sort( $applied_users );
 
 		$user_applied_list = [];
 		foreach ( $applied_users as $applied_user ) {
@@ -95,9 +105,8 @@ class MytoryBoardAdmin {
 		$user = new \WP_User( $user_id );
 		$user->add_role( $role_key );
 
-		$result = wp_update_user( $user );
 
-		if ( ! is_wp_error( $result ) ) {
+		if ( $user->has_cap( $role_key ) ) {
 			delete_user_meta( $user_id, "_{$this->mytory_board->taxonomyKey}_applied", $board_id );
 			echo json_encode( [
 				'result'  => 'success',
@@ -105,10 +114,9 @@ class MytoryBoardAdmin {
 				'user'    => $user,
 			] );
 		} else {
-			$wp_error = $result;
 			echo json_encode( [
 				'result'  => 'fail',
-				'message' => $wp_error->get_error_message(),
+				'message' => '알 수 없는 이유로 승인이 실패했습니다.',
 				'user'    => $user,
 			] );
 		}
@@ -120,7 +128,7 @@ class MytoryBoardAdmin {
 	function adminScripts() {
 		$screen = get_current_screen();
 
-		if ( $screen->id == "{$this->mytory_board->postTypeKey}_page_sticky-posts" ) {
+		if ( $screen->id == "{$this->mytory_board->postTypeKey}_page_{$this->mytory_board->taxonomyKey}-sticky-posts" ) {
 			wp_enqueue_script( "{$this->mytory_board->taxonomyKey}-sticky-posts", Helper::url( 'sticky-posts.js' ),
 				[ 'jquery-ui-autocomplete', 'underscore' ], false, true );
 		}
@@ -130,8 +138,8 @@ class MytoryBoardAdmin {
 		$result_message = "";
 		if ( ! empty( $_POST ) ) {
 			wp_verify_nonce( $_POST['_wpnonce'], "{$this->mytory_board->taxonomyKey}-sticky-posts" );
-			$diff = array_diff( get_option( 'sticky_posts' ), explode( ',', $_POST['sticky_posts'] ) );
-			if ( update_option( 'sticky_posts', explode( ',', $_POST['sticky_posts'] ) ) ) {
+			$diff = array_diff( (get_option( "{$this->mytory_board->taxonomyKey}-sticky-posts" ) ?: []), explode( ',', $_POST['sticky_posts'] ) );
+			if ( update_option( "{$this->mytory_board->taxonomyKey}-sticky-posts", explode( ',', $_POST['sticky_posts'] ) ) ) {
 				$result_message = '저장했습니다.';
 			} elseif ( empty( $diff ) ) {
 				$result_message = '추가/제거한 글이 없어서 저장하지 않았습니다.';
@@ -381,7 +389,7 @@ class MytoryBoardAdmin {
 			die();
 		}
 
-		if (add_user_meta(get_current_user_id(), "_{$this->mytory_board->taxonomyKey}_applied", $_POST['term_id'])) {
+		if ( add_user_meta( get_current_user_id(), "_{$this->mytory_board->taxonomyKey}_applied", $_POST['term_id'] ) ) {
 			echo json_encode( [
 				'result'  => 'success',
 				'message' => '가입 신청 완료',
@@ -393,5 +401,27 @@ class MytoryBoardAdmin {
 			] );
 		}
 		die();
+	}
+
+	public function additionalRoleForm( $wp_user ) {
+		// Board가 여러 개라도 권한 폼은 한 번만 나와야 한다.
+		require_once 'templates/additional-role-form.php';
+	}
+
+	public function profileUpdate( $user_id, $old_user_data ) {
+		global $wp_roles;
+		$wp_user = new WP_User( $user_id );
+
+		foreach ( $wp_roles->roles as $role_key => $role ) {
+			if ( strstr( $role_key, $this->mytory_board->taxonomyKey ) ) {
+				$wp_user->remove_role( $role_key );
+			}
+		}
+
+		if ( ! empty( $_POST['branch_role_key'] ) ) {
+			foreach ( $_POST['branch_role_key'] as $branch_role_key ) {
+				$wp_user->add_role( $branch_role_key );
+			}
+		}
 	}
 }

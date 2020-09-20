@@ -681,6 +681,19 @@ class MytoryBoard {
 		return $this->archivePageOriginalTermSlug;
 	}
 
+	function getStickyPosts( $posts_per_page = -1) {
+		$sticky_post_ids = get_option( "{$this->taxonomyKey}-sticky-posts" );
+
+		if ($sticky_post_ids) {
+			$wp_query = new \WP_Query( [
+				'post__in'       => $sticky_post_ids,
+				'post_type'      => 'any',
+				'posts_per_page' => $posts_per_page,
+			] );
+			return $wp_query->posts;
+		}
+		return [];
+	}
 }
 
 
