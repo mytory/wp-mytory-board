@@ -694,7 +694,7 @@ class MytoryBoard {
 		return $this->archivePageOriginalTermSlug;
 	}
 
-	function getStickyPosts( $posts_per_page = -1) {
+	public function getStickyPosts( $posts_per_page = -1) {
 		$sticky_post_ids = get_option( "{$this->taxonomyKey}-sticky-posts" );
 
 		if ($sticky_post_ids) {
@@ -707,6 +707,38 @@ class MytoryBoard {
 		}
 		return [];
 	}
+
+	/**
+     * 가입신청 버튼이 필요한지 여부를 가린다.
+	 * @param $term
+	 *
+	 * @return bool
+	 */
+	public function needRegisterButton( $term ) {
+		if ( ! is_tax( $this->taxonomyKey )) {
+		    // 탁소노미 목록이 아니면
+		    return false;
+        }
+
+		if ( ! is_user_logged_in() ) {
+		    // 로그인을 안 한 상태면
+		    return false;
+        }
+
+		if ( in_array( $term->term_id, $this->getMyBoardIds( true ) ) ) {
+		    // 내가 가입돼 있는 곳이면
+		    return false;
+        }
+
+		$applied_board_ids = get_user_meta( get_current_user_id(), "_{$this->taxonomyKey}_applied" ) ?: [];
+		if ( in_array( $term->term_id, $applied_board_ids ) ) {
+		    // 이미 가입신청한 곳이면
+		    return false;
+        }
+
+		return true;
+
+    }
 }
 
 
