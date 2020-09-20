@@ -2,6 +2,7 @@
 
 namespace Mytory\Board;
 
+use ParagonIE\Sodium\Core\Curve25519\Ge\P1p1;
 use Sunra\PhpSimple\HtmlDomParser;
 use WP_Term;
 use WP_Term_Query;
@@ -104,6 +105,8 @@ class MytoryBoard {
 
 		add_action( "wp_ajax_{$this->taxonomyKey}_dislike", [ $this, 'dislike' ] );
 		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_dislike", [ $this, 'dislike' ] );
+
+		add_filter( 'get_post_metadata', [$this, 'disableGetThumbnailIdWhenHasNotPermission'], 10, 4 );
 
 		if ( $this->roleByBoard ) {
 
@@ -738,6 +741,34 @@ class MytoryBoard {
 
 		return true;
 
+    }
+
+	/**
+     * 비공개글 제목을 노출하게 한 경우, 대표 이미지를 노출하지 않게 하기 위한 훅.
+	 * @param $null
+	 * @param $object_id
+	 * @param $meta_key
+	 * @param $single
+	 *
+	 * @return string|null
+	 */
+	public function disableGetThumbnailIdWhenHasNotPermission( $null, $object_id, $meta_key, $single ) {
+	    if ( $meta_key == '_thumbnail_id' ) {
+	        // 로그인하지 않았으면.
+	        if (!is_user_logged_in()) {
+	            return '';
+            }
+
+	        // 내 게시판 읽기 권한이 없으면.
+		    $term_ids = array_map(function ( $term ) {
+		        return $term->term_id;
+            }, wp_get_post_terms( $object_id, $this->taxonomyKey ));
+		    $my_board_ids = $this->getMyBoardIds( true );
+		    if (empty(array_intersect($term_ids, $my_board_ids))) {
+		        return '';
+            }
+        }
+		return null;
     }
 }
 
