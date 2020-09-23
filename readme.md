@@ -50,14 +50,16 @@ $memberBoard = new \Mytory\Board\MytoryBoard( [
 	'postTypeKey'         => 'member_board_post',
 	'postTypeLabel'       => '회원 게시글',
 	'postTypeRewriteSlug' => 'mp',
-	'roleByBoard'         => true
+	'roleByBoard'         => true,
+    'publicBoardSlugs'    => [ 'public' ],
+    'memberBoardSlugs'    => [ 'member' ],
 ] );
 ~~~
 
 ### 글쓰기에서 메타값 저장
 
-input의 name값을 `meta['_{custom_post_type}_{keyname}']`으로 하면 메타값을 저장하게 된다. 예컨대 아래처럼 한다.
+input의 name값을 `meta['_{taxonomy_key}_{keyname}']`으로 하면 메타값을 저장하게 된다. 예컨대 아래처럼 한다.
 
 ~~~ html
-<input type="text" name="_mytory_board_post_첨부링크">
+<input type="text" name="_mytory_board_첨부링크">
 ~~~
