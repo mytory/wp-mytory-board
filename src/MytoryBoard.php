@@ -2,7 +2,6 @@
 
 namespace Mytory\Board;
 
-use ParagonIE\Sodium\Core\Curve25519\Ge\P1p1;
 use Sunra\PhpSimple\HtmlDomParser;
 use WP_Term;
 use WP_Term_Query;
@@ -749,7 +748,7 @@ class MytoryBoard {
 	 * @param $object_id
 	 * @param $meta_key
 	 * @param $single
-	 *
+     *
 	 * @return string|null
 	 */
 	public function disableGetThumbnailIdWhenHasNotPermission( $null, $object_id, $meta_key, $single ) {
@@ -758,24 +757,35 @@ class MytoryBoard {
 	        return null;
         }
 
-	    if ( $meta_key == '_thumbnail_id' ) {
-	        // 특성 이미지를 불러오는 경우에만 사용한다.
+		if ( $meta_key == '_thumbnail_id' ) {
+			// 특성 이미지를 불러오는 경우에만 사용한다.
 
-		    if (!is_user_logged_in()) {
-		        // 로그인하지 않았으면.
-		        return '';
-            }
+            // 공개 게시판의 글이라면 썸네일 불러오기 허용.
+			$terms = wp_get_post_terms( $object_id, $this->taxonomyKey );
+			foreach ( $terms as $term ) {
+				/**
+				 * @var WP_Term $term
+				 */
+                if (in_array($term->slug, $this->publicBoardSlugs)) {
+                    return null;
+                }
+			}
 
-		    $term_ids = array_map(function ( $term ) {
-		        return $term->term_id;
-            }, wp_get_post_terms( $object_id, $this->taxonomyKey ));
-		    $my_board_ids = $this->getMyBoardIds( true );
+			if ( ! is_user_logged_in() ) {
+				// 로그인하지 않았으면.
+				return '';
+			}
 
-		    if (empty(array_intersect($term_ids, $my_board_ids))) {
-	            // 내 게시판 읽기 권한이 없으면.
-		        return '';
-            }
-        }
+			$term_ids     = array_map( function ( $term ) {
+				return $term->term_id;
+			}, $terms );
+			$my_board_ids = $this->getMyBoardIds( true );
+
+			if ( empty( array_intersect( $term_ids, $my_board_ids ) ) ) {
+				// 내 게시판 읽기 권한이 없으면.
+				return '';
+			}
+		}
 
 		return null;
     }
