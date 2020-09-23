@@ -54,4 +54,10 @@ $memberBoard = new \Mytory\Board\MytoryBoard( [
 ] );
 ~~~
 
+### 글쓰기에서 메타값 저장
 
+input의 name값을 `meta['_{custom_post_type}_{keyname}']`으로 하면 메타값을 저장하게 된다. 예컨대 아래처럼 한다.
+
+~~~ html
+<input type="text" name="_mytory_board_post_첨부링크">
+~~~
