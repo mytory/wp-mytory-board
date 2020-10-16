@@ -791,6 +791,20 @@ class MytoryBoard {
 
 		return null;
     }
+
+    public function getPublicBoards()
+    {
+        return new WP_Term_Query([
+            'slug' => $this->publicBoardSlugs,
+        ]);
+    }
+
+    public function getMemberBoards()
+    {
+        return new WP_Term_Query([
+            'slug' => $this->memberBoardSlugs,
+        ]);
+    }
 }
 
 
