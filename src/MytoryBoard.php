@@ -59,6 +59,7 @@ class MytoryBoard {
 	public $postTypeKey = 'mytory_board_post';
 	public $postTypeLabel = '게시글';
 	public $postTypeRewriteSlug = 'b';
+	public $writePageUrl = '/write';
 
 	private $archivePageOriginalTermSlug;
 	private $myBoards;
@@ -145,13 +146,14 @@ class MytoryBoard {
 		$this->publicBoardSlugs    = $config['publicBoardSlugs'] ?? $this->publicBoardSlugs;
 		$this->memberBoardSlugs    = $config['memberBoardSlugs'] ?? $this->memberBoardSlugs;
 
-		$this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
-		$this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
-		$this->taxonomyRewriteSlug = $config['taxonomyRewriteSlug'] ?? $this->taxonomyRewriteSlug;
-		$this->postTypeKey         = $config['postTypeKey'] ?? $this->postTypeKey;
-		$this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
-		$this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
-	}
+	  $this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
+	  $this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
+	  $this->taxonomyRewriteSlug = $config['taxonomyRewriteSlug'] ?? $this->taxonomyRewriteSlug;
+	  $this->postTypeKey         = $config['postTypeKey'] ?? $this->postTypeKey;
+	  $this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
+	  $this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
+	  $this->writePageUrl        = $config['$this->writePageUrl'] ?? $this->writePageUrl;
+  }
 
 
 	function registerBoardTaxonomy() {

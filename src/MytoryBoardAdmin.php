@@ -34,6 +34,8 @@ class MytoryBoardAdmin {
 		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 
+		add_action( "admin_head", [ $this, 'disableAdminWrite' ]);
+
 		if ( $this->mytory_board->roleByBoard ) {
 			add_action( 'edit_user_profile', [ $this, 'additionalRoleForm' ], 10, 1 );
 			add_action( 'profile_update', [ $this, 'profileUpdate' ], 10, 2 );
@@ -422,6 +424,19 @@ class MytoryBoardAdmin {
 			foreach ( $_POST['branch_role_key'] as $branch_role_key ) {
 				$wp_user->add_role( $branch_role_key );
 			}
+		}
+	}
+
+	public function disableAdminWrite()
+	{
+		global $pagenow, $post;
+
+		if ( in_array($pagenow, ['post-new.php']) && !empty($_GET['post_type']) && $_GET['post_type'] === $this->mytory_board->postTypeKey ) {
+			wp_redirect($this->mytory_board->writePageUrl);
+		}
+
+		if ( in_array($pagenow, ['post.php']) && !empty($post) && $post->post_type === $this->mytory_board->postTypeKey ) {
+			wp_redirect($this->mytory_board->writePageUrl . '?id=' . $post->ID);
 		}
 	}
 }
