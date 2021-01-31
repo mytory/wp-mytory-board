@@ -36,7 +36,7 @@ class MytoryBoardAdmin {
 
 		add_action( "admin_head", [ $this, 'disableAdminWrite' ]);
 
-		if ( $this->mytory_board->roleByBoard ) {
+		if ( $this->mytory_board->roleByBoard and current_user_can( 'edit_users' ) ) {
 			add_action( 'edit_user_profile', [ $this, 'additionalRoleForm' ], 10, 1 );
 			add_action( 'profile_update', [ $this, 'profileUpdate' ], 10, 2 );
 		}
