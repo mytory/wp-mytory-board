@@ -606,7 +606,7 @@ class MytoryBoard {
 
 			$this->myBoards = ( new WP_Term_Query( $args ) )->terms;
 
-			return $this->myBoards;
+			return $this->myBoards ?: [];
 		}
 
 		if ( $this->roleByBoard ) {
