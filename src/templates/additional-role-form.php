@@ -3,11 +3,11 @@
  * @var WP_User $wp_user
  */
 ?>
-<h2>지회 설정</h2>
+<h2>소속 <?php echo $this->mytory_board->taxonomyLabel ?> 설정</h2>
 <table class="form-table">
     <tr>
         <th>
-            지회
+	        <?php echo $this->mytory_board->taxonomyLabel ?>
         </th>
         <td>
 			<?php
