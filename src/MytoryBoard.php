@@ -691,6 +691,7 @@ class MytoryBoard {
 			// query_var[$this->taxonomyKey]가 설정돼 있는 이 경우는 archive template 페이지가 로드된 경우다.
 			// 근데 이 때 액션을 실행하면 get_the_archive_title()이 이상한 값을 리턴한다.
 			// 그래서 원래의 term slug를 저장해 놨다가 나중에 사용할 용도로 저장한다.
+            // todo 고유주소가 기본인 경우 slug가 아니라 id를 저장하게 된다. 그러면 taxonomy 페이지에서 사용하는 getArchivePageOriginalTermSlug() 메서드에 문제가 생긴다.
 			$this->archivePageOriginalTermSlug = $wp_query_obj->get( $this->taxonomyKey );
 
 			return true;
@@ -722,18 +723,15 @@ class MytoryBoard {
 	 * @return bool
 	 */
 	public function needRegisterButton( $term ) {
-		if ( ! is_tax( $this->taxonomyKey )) {
-		    // 탁소노미 목록이 아니면
-		    return false;
-        }
-
 		if ( ! is_user_logged_in() ) {
 		    // 로그인을 안 한 상태면
+			echo 2;
 		    return false;
         }
 
 		if ( in_array( $term->term_id, $this->getMyBoardIds( true ) ) ) {
 		    // 내가 가입돼 있는 곳이면
+			echo 3;
 		    return false;
         }
 
