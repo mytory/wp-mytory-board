@@ -34,7 +34,7 @@ class MytoryBoardAdmin {
 		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 
-		add_action( "admin_head", [ $this, 'disableAdminWrite' ]);
+		add_action( "admin_init", [ $this, 'disableAdminWrite' ]);
 
 		if ( $this->mytory_board->roleByBoard and current_user_can( 'edit_users' ) ) {
 			add_action( 'edit_user_profile', [ $this, 'additionalRoleForm' ], 10, 1 );
@@ -427,16 +427,20 @@ class MytoryBoardAdmin {
 		}
 	}
 
-	public function disableAdminWrite()
-	{
+	public function disableAdminWrite() {
 		global $pagenow, $post;
 
-		if ( in_array($pagenow, ['post-new.php']) && !empty($_GET['post_type']) && $_GET['post_type'] === $this->mytory_board->postTypeKey ) {
-			wp_redirect($this->mytory_board->writePageUrl);
+		if ( in_array( $pagenow, [ 'post-new.php' ] ) && ! empty( $_GET['post_type'] )
+		     && $_GET['post_type'] === $this->mytory_board->postTypeKey
+		) {
+			wp_redirect( $this->mytory_board->writePageUrl );
 		}
 
-		if ( in_array($pagenow, ['post.php']) && !empty($post) && $post->post_type === $this->mytory_board->postTypeKey ) {
-			wp_redirect($this->mytory_board->writePageUrl . '?id=' . $post->ID);
+		if ( in_array( $pagenow, [ 'post.php' ] ) && ! empty( $_GET['post'] ) ) {
+			$post = get_post( $_GET['post'] );
+			if ( $post->post_type === $this->mytory_board->postTypeKey ) {
+				wp_redirect( $this->mytory_board->writePageUrl . '?id=' . $post->ID );
+			}
 		}
 	}
 }
