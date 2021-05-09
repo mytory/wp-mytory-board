@@ -65,6 +65,8 @@ class MytoryBoard {
 	public $postTypeRewriteSlug = 'b';
 	public $writePageUrl = '/write';
 
+	public $feed = false;
+
 	private $archivePageOriginalTermSlug;
 	private $myBoards;
 
@@ -85,6 +87,7 @@ class MytoryBoard {
 	 * @type boolean $roleByBoard         : 게시판별로 권한을 지정할 수 있게 함. Default false
 	 * @type array   $publicBoardSlugs    : roleByBaord가 true인 경우 전체 공개 게시판의 슬러그를 적는다. Default ['public']
 	 * @type array   $memberBoardSlugs    : roleByBaord가 true인 경우 회원 공개 게시판의 슬러그를 적는다. Default ['member']
+	 * @type array   $feed                : RSS 여부. Default false
 	 * }
 	 */
 	function __construct( $config = [] ) {
@@ -139,6 +142,10 @@ class MytoryBoard {
 			add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 		}
 
+		if ( $this->feed === false ) {
+			add_action( 'pre_get_posts', [ $this, 'disableFeed' ] );
+		}
+
 		new MytoryBoardAdmin( $this );
 	}
 
@@ -156,7 +163,9 @@ class MytoryBoard {
 		$this->postTypeKey         = $config['postTypeKey'] ?? $this->postTypeKey;
 		$this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
 		$this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
-		$this->writePageUrl        = $config['$this->writePageUrl'] ?? $this->writePageUrl;
+		$this->writePageUrl        = $config['writePageUrl'] ?? $this->writePageUrl;
+
+		$this->feed = $config['feed'] ?? $this->feed;
 	}
 
 	private function addDefaultRole() {
@@ -807,7 +816,7 @@ class MytoryBoard {
 	}
 
 	public function isPublicBoard( $board_id ) {
-	    $public_boards = $this->getPublicBoards()->terms;
+		$public_boards = $this->getPublicBoards()->terms;
 		foreach ( $public_boards as $public_board ) {
 			if ( $board_id === $public_board->term_id ) {
 				return true;
@@ -821,6 +830,12 @@ class MytoryBoard {
 		return new WP_Term_Query( [
 			'slug' => $this->publicBoardSlugs,
 		] );
+	}
+
+	public function disableFeed( $query ) {
+		if ( $query->is_feed() && in_array( $this->postTypeKey, (array) $query->get( 'post_type' ) ) ) {
+			die( 'Feed disabled' );
+		}
 	}
 }
 
