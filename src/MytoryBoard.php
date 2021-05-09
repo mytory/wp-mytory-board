@@ -727,15 +727,11 @@ class MytoryBoard {
 	public function needRegisterButton( $term ) {
 		if ( ! is_user_logged_in() ) {
 			// 로그인을 안 한 상태면
-			echo 2;
-
 			return false;
 		}
 
 		if ( in_array( $term->term_id, $this->getMyBoardIds( true ) ) ) {
 			// 내가 가입돼 있는 곳이면
-			echo 3;
-
 			return false;
 		}
 
