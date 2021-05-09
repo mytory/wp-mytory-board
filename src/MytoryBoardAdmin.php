@@ -34,7 +34,7 @@ class MytoryBoardAdmin {
 		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
 
-		add_action( "admin_init", [ $this, 'disableAdminWrite' ]);
+		add_action( "admin_init", [ $this, 'disableAdminWrite' ] );
 
 		if ( $this->mytory_board->roleByBoard and current_user_can( 'edit_users' ) ) {
 			add_action( 'edit_user_profile', [ $this, 'additionalRoleForm' ], 10, 1 );
@@ -91,7 +91,8 @@ class MytoryBoardAdmin {
 
 		$user_applied_list = [];
 		foreach ( $applied_users as $applied_user ) {
-			$user_applied_list[ $applied_user->ID ] = get_user_meta( $applied_user->ID, "_{$this->mytory_board->taxonomyKey}_applied" );
+			$user_applied_list[ $applied_user->ID ] = get_user_meta( $applied_user->ID,
+				"_{$this->mytory_board->taxonomyKey}_applied" );
 		}
 
 		$roles = get_editable_roles();
@@ -130,7 +131,9 @@ class MytoryBoardAdmin {
 	function adminScripts() {
 		$screen = get_current_screen();
 
-		if ( $screen->id == "{$this->mytory_board->postTypeKey}_page_{$this->mytory_board->taxonomyKey}-sticky-posts" ) {
+		if ( $screen->id
+		     == "{$this->mytory_board->postTypeKey}_page_{$this->mytory_board->taxonomyKey}-sticky-posts"
+		) {
 			wp_enqueue_script( "{$this->mytory_board->taxonomyKey}-sticky-posts", Helper::url( 'sticky-posts.js' ),
 				[ 'jquery-ui-autocomplete', 'underscore' ], false, true );
 		}
@@ -140,8 +143,11 @@ class MytoryBoardAdmin {
 		$result_message = "";
 		if ( ! empty( $_POST ) ) {
 			wp_verify_nonce( $_POST['_wpnonce'], "{$this->mytory_board->taxonomyKey}-sticky-posts" );
-			$diff = array_diff( (get_option( "{$this->mytory_board->taxonomyKey}-sticky-posts" ) ?: []), explode( ',', $_POST['sticky_posts'] ) );
-			if ( update_option( "{$this->mytory_board->taxonomyKey}-sticky-posts", explode( ',', $_POST['sticky_posts'] ) ) ) {
+			$diff = array_diff( ( get_option( "{$this->mytory_board->taxonomyKey}-sticky-posts" ) ?: [] ),
+				explode( ',', $_POST['sticky_posts'] ) );
+			if ( update_option( "{$this->mytory_board->taxonomyKey}-sticky-posts",
+				explode( ',', $_POST['sticky_posts'] ) )
+			) {
 				$result_message = '저장했습니다.';
 			} elseif ( empty( $diff ) ) {
 				$result_message = '추가/제거한 글이 없어서 저장하지 않았습니다.';
@@ -240,7 +246,8 @@ class MytoryBoardAdmin {
 				$wp_error = $affected_ids;
 				echo json_encode( [
 					'result'  => 'fail',
-					'message' => "글은 저장했지만, {$this->mytory_board->taxonomyLabel} 입력이 되지 않았습니다. 에러 메시지: " . $wp_error->get_error_message(),
+					'message' => "글은 저장했지만, {$this->mytory_board->taxonomyLabel} 입력이 되지 않았습니다. 에러 메시지: "
+					             . $wp_error->get_error_message(),
 				] );
 				die();
 			}
@@ -252,6 +259,63 @@ class MytoryBoardAdmin {
 			'redirect_to' => get_permalink( $post_id ),
 		] );
 		die();
+	}
+
+	/**
+	 * canAnonymousWriting 값이 false인 경우에, 로그인해 있는지, 글 작성 권한이 있는지 검사한다.
+	 *
+	 * @return bool
+	 */
+	private function checkOverallPermission() {
+		if ( ! $this->mytory_board->canAnonymousWriting ) {
+			if ( ! is_user_logged_in() ) {
+				return false;
+			}
+
+			if ( ! current_user_can( "publish_{$this->mytory_board->postTypeKey}" ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * $_POST에서 WP_Post에 필요한 키값만 추려서 $postarr를 구성한 뒤 리턴.
+	 *
+	 * @return array
+	 */
+	private function extractPostarr() {
+		$keys = [
+			'ID',
+			'post_author',
+			'post_content',
+			'post_content_filtered',
+			'post_title',
+			'post_excerpt',
+			'post_status',
+			'post_type',
+			'comment_status',
+			'ping_status',
+			'post_password',
+			'to_ping',
+			'pinged',
+			'post_parent',
+			'menu_order',
+			'guid',
+			'import_id',
+			'context'
+		];
+
+		$postdata = [];
+
+		foreach ( $_POST as $k => $v ) {
+			if ( in_array( $k, $keys ) ) {
+				$postdata[ $k ] = $v;
+			}
+		}
+
+		return $postdata;
 	}
 
 	function trash() {
@@ -303,70 +367,18 @@ class MytoryBoardAdmin {
 		die();
 	}
 
-	/**
-	 * $_POST에서 WP_Post에 필요한 키값만 추려서 $postarr를 구성한 뒤 리턴.
-	 *
-	 * @return array
-	 */
-	private function extractPostarr() {
-		$keys = [
-			'ID',
-			'post_author',
-			'post_content',
-			'post_content_filtered',
-			'post_title',
-			'post_excerpt',
-			'post_status',
-			'post_type',
-			'comment_status',
-			'ping_status',
-			'post_password',
-			'to_ping',
-			'pinged',
-			'post_parent',
-			'menu_order',
-			'guid',
-			'import_id',
-			'context'
-		];
-
-		$postdata = [];
-
-		foreach ( $_POST as $k => $v ) {
-			if ( in_array( $k, $keys ) ) {
-				$postdata[ $k ] = $v;
-			}
-		}
-
-		return $postdata;
-	}
-
-	/**
-	 * canAnonymousWriting 값이 false인 경우에, 로그인해 있는지, 글 작성 권한이 있는지 검사한다.
-	 *
-	 * @return bool
-	 */
-	private function checkOverallPermission() {
-		if ( ! $this->mytory_board->canAnonymousWriting ) {
-			if ( ! is_user_logged_in() ) {
-				return false;
-			}
-
-			if ( ! current_user_can( "publish_{$this->mytory_board->postTypeKey}" ) ) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
 	public function termsLinkInList( $views ) {
 
 		/**
 		 * @var \WP_Term $term
 		 */
 
-		$wp_term_query = new \WP_Term_Query( [
+		if ( ! current_user_can( 'edit_users' ) ) {
+			// 일반 회원이면 다른 게시판 상황을 한눈에 볼 수 없게 한다.
+			return null;
+		}
+
+			$wp_term_query = new \WP_Term_Query( [
 			'taxonomy'   => $this->mytory_board->taxonomyKey,
 			'hide_empty' => false,
 			'orderby'    => 'name',
@@ -374,7 +386,8 @@ class MytoryBoardAdmin {
 
 		if ( $wp_term_query->terms ) {
 			foreach ( $wp_term_query->terms as $term ) {
-				$url     = site_url( "/wp-admin/edit.php?post_type={$this->mytory_board->postTypeKey}&{$this->mytory_board->taxonomyKey}={$term->slug}" );
+				$url
+					     = site_url( "/wp-admin/edit.php?post_type={$this->mytory_board->postTypeKey}&{$this->mytory_board->taxonomyKey}={$term->slug}" );
 				$views[] = "<a href='{$url}'>{$term->name} <span class='count'>({$term->count})</span></a>";
 			}
 		}
@@ -391,7 +404,9 @@ class MytoryBoardAdmin {
 			die();
 		}
 
-		if ( add_user_meta( get_current_user_id(), "_{$this->mytory_board->taxonomyKey}_applied", $_POST['term_id'] ) ) {
+		if ( add_user_meta( get_current_user_id(), "_{$this->mytory_board->taxonomyKey}_applied",
+			$_POST['term_id'] )
+		) {
 			echo json_encode( [
 				'result'  => 'success',
 				'message' => '가입 신청 완료',
