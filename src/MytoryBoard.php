@@ -18,18 +18,21 @@ use WP_Term_Query;
 class MytoryBoard {
 	/**
 	 * 게시판을 설정하지 않고 글을 썼을 때 기본으로 설정할 게시판이 있는지
+	 *
 	 * @var null
 	 */
 	public $defaultBoardId = null;
 
 	/**
 	 * 로그인 안 한 사람이 글을 쓸 수 있는지
+	 *
 	 * @var bool
 	 */
 	public $canAnonymousWriting = true;
 
 	/**
 	 * 글별로 이름을 따로 설정할 수 있는지
+	 *
 	 * @var bool
 	 */
 	public $canSetNameByPost = true;
@@ -38,6 +41,7 @@ class MytoryBoard {
 	 * 게시판별로 권한 관리를 할지 결정.
 	 * 클라이언트단을 제어해 주지는 않는다. 관리자단 제어용 권한이다.
 	 * 클라이언트단에서는 각자 알아서 코딩해야 한다.
+	 *
 	 * @var bool
 	 */
 	public $roleByBoard = false;
@@ -67,20 +71,20 @@ class MytoryBoard {
 	/**
 	 * MytoryBoard constructor.
 	 *
-	 * @param array $config {
+	 * @param array  $config              {
 	 *
-	 * @type int $defaultBoardId : 기본 게시판 term id
+	 * @type int     $defaultBoardId      : 기본 게시판 term id
 	 * @type boolean $canAnonymousWriting : 익명 쓰기 가능 여부
-	 * @type boolean $canSetNameByPost : 게시글별 이름 설정 가능 여부
-	 * @type string $taxonomyKey : 게시판 taxonomy key
-	 * @type string $taxonomyLabel : 게시판 taxonomy label
-	 * @type string $taxonomyRewriteSlug : 게시판 url rewrite slug. Default 'mb'
-	 * @type string $postTypeKey : 게시글 post type key
-	 * @type string $postTypeLabel : 게시글 post type label
-	 * @type string $postTypeRewriteSlug : 게시글 url rewrite slug. Default 'b'
-	 * @type boolean $roleByBoard : 게시판별로 권한을 지정할 수 있게 함. Default false
-	 * @type array $publicBoardSlugs : roleByBaord가 true인 경우 전체 공개 게시판의 슬러그를 적는다. Default ['public']
-	 * @type array $memberBoardSlugs : roleByBaord가 true인 경우 회원 공개 게시판의 슬러그를 적는다. Default ['member']
+	 * @type boolean $canSetNameByPost    : 게시글별 이름 설정 가능 여부
+	 * @type string  $taxonomyKey         : 게시판 taxonomy key
+	 * @type string  $taxonomyLabel       : 게시판 taxonomy label
+	 * @type string  $taxonomyRewriteSlug : 게시판 url rewrite slug. Default 'mb'
+	 * @type string  $postTypeKey         : 게시글 post type key
+	 * @type string  $postTypeLabel       : 게시글 post type label
+	 * @type string  $postTypeRewriteSlug : 게시글 url rewrite slug. Default 'b'
+	 * @type boolean $roleByBoard         : 게시판별로 권한을 지정할 수 있게 함. Default false
+	 * @type array   $publicBoardSlugs    : roleByBaord가 true인 경우 전체 공개 게시판의 슬러그를 적는다. Default ['public']
+	 * @type array   $memberBoardSlugs    : roleByBaord가 true인 경우 회원 공개 게시판의 슬러그를 적는다. Default ['member']
 	 * }
 	 */
 	function __construct( $config = [] ) {
@@ -123,7 +127,7 @@ class MytoryBoard {
 			add_action( 'pre_get_posts', [ $this, 'onlyMyBoardPost' ] );
 
 			// 권한이 없는 경우 ID만으로 특성 이미지를 불러올 수 없게 한다. 권한이 없는 사람에게 제목은 보여 주고 내용만 바꿔치기하는 경우 사용한다.
-			add_filter( 'get_post_metadata', [$this, 'disableGetThumbnailIdWhenHasNotPermission'], 10, 4 );
+			add_filter( 'get_post_metadata', [ $this, 'disableGetThumbnailIdWhenHasNotPermission' ], 10, 4 );
 
 		} else {
 			// 게시판별로 롤을 관리하는 게 아닌 경우에.
@@ -146,15 +150,33 @@ class MytoryBoard {
 		$this->publicBoardSlugs    = $config['publicBoardSlugs'] ?? $this->publicBoardSlugs;
 		$this->memberBoardSlugs    = $config['memberBoardSlugs'] ?? $this->memberBoardSlugs;
 
-	  $this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
-	  $this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
-	  $this->taxonomyRewriteSlug = $config['taxonomyRewriteSlug'] ?? $this->taxonomyRewriteSlug;
-	  $this->postTypeKey         = $config['postTypeKey'] ?? $this->postTypeKey;
-	  $this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
-	  $this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
-	  $this->writePageUrl        = $config['$this->writePageUrl'] ?? $this->writePageUrl;
-  }
+		$this->taxonomyKey         = $config['taxonomyKey'] ?? $this->taxonomyKey;
+		$this->taxonomyLabel       = $config['taxonomyLabel'] ?? $this->taxonomyLabel;
+		$this->taxonomyRewriteSlug = $config['taxonomyRewriteSlug'] ?? $this->taxonomyRewriteSlug;
+		$this->postTypeKey         = $config['postTypeKey'] ?? $this->postTypeKey;
+		$this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
+		$this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
+		$this->writePageUrl        = $config['$this->writePageUrl'] ?? $this->writePageUrl;
+	}
 
+	private function addDefaultRole() {
+		if ( ! get_role( "{$this->taxonomyKey}_writer" ) ) {
+			add_role(
+				"{$this->taxonomyKey}_writer",
+				"{$this->taxonomyLabel} 글쓴이",
+				[
+					'read'                                      => true,
+					'upload_files'                              => true,
+					"edit_{$this->postTypeKey}"                 => true,
+					"edit_{$this->postTypeKey}" . "s"           => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+					"publish_{$this->postTypeKey}"              => true,
+					"edit_published_{$this->postTypeKey}" . "s" => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
+					"read_{$this->postTypeKey}"                 => true,
+					"delete_{$this->postTypeKey}"               => true,
+				]
+			);
+		}
+	}
 
 	function registerBoardTaxonomy() {
 		$labels = [
@@ -183,12 +205,12 @@ class MytoryBoard {
 				'slug'       => $this->taxonomyRewriteSlug,
 				'with_front' => false,
 			],
-            'capabilities' => [
-                'manage_terms' => 'manage_options', //by default only admin
-                'edit_terms' => 'manage_options',
-                'delete_terms' => 'manage_options',
-                'assign_terms' => "edit_{$this->postTypeKey}" . "s", // s 빼먹을까 봐 일부터 띄어 씀.
-            ]
+			'capabilities'      => [
+				'manage_terms' => 'manage_options', //by default only admin
+				'edit_terms'   => 'manage_options',
+				'delete_terms' => 'manage_options',
+				'assign_terms' => "edit_{$this->postTypeKey}" . "s", // s 빼먹을까 봐 일부터 띄어 씀.
+			]
 		];
 
 		register_taxonomy( $this->taxonomyKey, $this->postTypeKey, $args );
@@ -233,7 +255,7 @@ class MytoryBoard {
 				'read_private_posts'     => "read_private_{$this->postTypeKey}",
 			],
 			'map_meta_cap' => true,
-			'menu_icon' => 'dashicons-format-status',
+			'menu_icon'    => 'dashicons-format-status',
 		];
 
 		register_post_type( $this->postTypeKey, $args );
@@ -250,7 +272,7 @@ class MytoryBoard {
 			"edit_other_{$this->postTypeKey}",
 			"publish_{$this->postTypeKey}",
 			"read_private_{$this->postTypeKey}",
-            "edit_{$this->taxonomyKey}",
+			"edit_{$this->taxonomyKey}",
 		];
 
 		$roles = [ 'administrator', 'editor' ];
@@ -286,9 +308,9 @@ class MytoryBoard {
 	 * <code><input name="meta[_mytory_board_custom_key]"></code>로 값을 넘기면 postmeta에 저장한다.
 	 * <code>mytory_board</code>는 당연히 <code>$taxonomyKey</code>로 대체해야 한다.
 	 *
-	 * @param $post_id
+	 * @param          $post_id
 	 * @param \WP_Post $post
-	 * @param $is_update
+	 * @param          $is_update
 	 */
 	function updateMeta( $post_id, \WP_Post $post, $is_update ) {
 		if ( ! empty( $_POST['meta'] ) ) {
@@ -316,9 +338,9 @@ class MytoryBoard {
 	 * 워드프레스의 기본 권한 모델로는 저장할 때 글을 특정 board에만 넣게 할 수가 없다.
 	 * 그래서 hook을 걸게 했다.
 	 *
-	 * @param $post_id
+	 * @param          $post_id
 	 * @param \WP_Post $post
-	 * @param $is_update
+	 * @param          $is_update
 	 */
 	function addBoardTermToPost( $post_id, \WP_Post $post, $is_update ) {
 		if ( ! empty( $_POST['tax_input'][ $this->taxonomyKey ] ) ) {
@@ -413,13 +435,36 @@ class MytoryBoard {
 		}
 		parse_str( $parsed['query'], $query_string );
 		$query_string['writing_id'] = get_the_ID();
-		$edit_link                  = "{$parsed['scheme']}://{$parsed['host']}{$parsed['path']}?" . http_build_query( $query_string );
+		$edit_link                  = "{$parsed['scheme']}://{$parsed['host']}{$parsed['path']}?"
+		                              . http_build_query( $query_string );
 
 		return $edit_link;
 	}
 
 	public function getDeleteLink( $redirect_to ) {
 		return Helper::url( 'delete.php?writing_id=' . get_the_ID() . '&redirect_to=' . urlencode( $redirect_to ) );
+	}
+
+	/**
+	 * 게시판 이름이 변경되면 role 이름도 변경된다.
+	 *
+	 * @param $term_id
+	 * @param $tt_id
+	 */
+	public function updateRole( $term_id, $tt_id ) {
+
+		$term = get_term( $term_id );
+		if ( in_array( $term->slug, $this->publicBoardSlugs ) ) {
+			return;
+		}
+
+		if ( in_array( $term->slug, $this->memberBoardSlugs ) ) {
+			return;
+		}
+
+		remove_role( "{$this->taxonomyKey}-writer-{$term_id}" );
+		remove_role( "{$this->taxonomyKey}-editor-{$term_id}" );
+		$this->addRole( $term_id, $tt_id );
 	}
 
 	/**
@@ -455,32 +500,10 @@ class MytoryBoard {
 	}
 
 	/**
-	 * 게시판 이름이 변경되면 role 이름도 변경된다.
-	 *
-	 * @param $term_id
-	 * @param $tt_id
-	 */
-	public function updateRole( $term_id, $tt_id ) {
-
-		$term = get_term( $term_id );
-		if ( in_array( $term->slug, $this->publicBoardSlugs ) ) {
-			return;
-		}
-
-		if ( in_array( $term->slug, $this->memberBoardSlugs ) ) {
-			return;
-		}
-
-		remove_role( "{$this->taxonomyKey}-writer-{$term_id}" );
-		remove_role( "{$this->taxonomyKey}-editor-{$term_id}" );
-		$this->addRole( $term_id, $tt_id );
-	}
-
-	/**
-	 * @param int $term_id
-	 * @param int $tt_id
+	 * @param int                $term_id
+	 * @param int                $tt_id
 	 * @param \WP_Term|\WP_Error $deleted_term
-	 * @param array $object_ids
+	 * @param array              $object_ids
 	 */
 	public function removeRole( int $term_id, int $tt_id, $deleted_term, array $object_ids ) {
 		$term = get_term( $term_id );
@@ -494,25 +517,6 @@ class MytoryBoard {
 
 		remove_role( "{$this->taxonomyKey}-writer-{$term_id}" );
 		remove_role( "{$this->taxonomyKey}-editor-{$term_id}" );
-	}
-
-	private function addDefaultRole() {
-		if ( ! get_role( "{$this->taxonomyKey}_writer" ) ) {
-			add_role(
-				"{$this->taxonomyKey}_writer",
-				"{$this->taxonomyLabel} 글쓴이",
-				[
-					'read'                                      => true,
-					'upload_files'                              => true,
-					"edit_{$this->postTypeKey}"                 => true,
-					"edit_{$this->postTypeKey}" . "s"           => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
-					"publish_{$this->postTypeKey}"              => true,
-					"edit_published_{$this->postTypeKey}" . "s" => true, // s가 눈에 안 띌까봐 일부러 이렇게 씀.
-					"read_{$this->postTypeKey}"                 => true,
-					"delete_{$this->postTypeKey}"               => true,
-				]
-			);
-		}
 	}
 
 	public function onlyMyMedia( $wp_query_obj ) {
@@ -559,7 +563,7 @@ class MytoryBoard {
 		if ( ! current_user_can( 'delete_pages' ) ) {
 			// 관리자 권한이 없다면
 
-            // 권한을 가진 게시판 + 전체 공개 게시판 + 회원 공개 게시판
+			// 권한을 가진 게시판 + 전체 공개 게시판 + 회원 공개 게시판
 			$boardSlugsCanRead = array_merge( array_map( function ( $term ) {
 				return $term->slug;
 			}, $this->getMyBoards() ), $this->publicBoardSlugs, $this->memberBoardSlugs );
@@ -571,6 +575,23 @@ class MytoryBoard {
 					'terms'    => $boardSlugsCanRead,
 				]
 			] );
+		}
+	}
+
+	private function isBoardPostRequest( \WP_Query &$wp_query_obj ) {
+		if ( $wp_query_obj->get( 'post_type' ) === $this->postTypeKey ) {
+			return true;
+		}
+
+		if ( $wp_query_obj->get( $this->taxonomyKey ) ) {
+
+			// query_var[$this->taxonomyKey]가 설정돼 있는 이 경우는 archive template 페이지가 로드된 경우다.
+			// 근데 이 때 액션을 실행하면 get_the_archive_title()이 이상한 값을 리턴한다.
+			// 그래서 원래의 term slug를 저장해 놨다가 나중에 사용할 용도로 저장한다.
+			// todo 고유주소가 기본인 경우 slug가 아니라 id를 저장하게 된다. 그러면 taxonomy 페이지에서 사용하는 getArchivePageOriginalTermSlug() 메서드에 문제가 생긴다.
+			$this->archivePageOriginalTermSlug = $wp_query_obj->get( $this->taxonomyKey );
+
+			return true;
 		}
 	}
 
@@ -621,10 +642,10 @@ class MytoryBoard {
 			}
 
 			if ( $include_public_and_member_boards ) {
-				foreach ( array_merge($this->publicBoardSlugs, $this->memberBoardSlugs) as $slug ) {
-				    if ( $term = get_term_by( 'slug', $slug, $this->taxonomyKey ) ) {
-					    $boards[] = $term;
-                    }
+				foreach ( array_merge( $this->publicBoardSlugs, $this->memberBoardSlugs ) as $slug ) {
+					if ( $term = get_term_by( 'slug', $slug, $this->taxonomyKey ) ) {
+						$boards[] = $term;
+					}
 				}
 			}
 
@@ -634,16 +655,19 @@ class MytoryBoard {
 		}
 	}
 
-	public function getMyBoardIds( $include_public_and_member_boards = false ) {
-		return array_map( function ( WP_Term $board ) {
-			return $board->term_id;
-		}, $this->getMyBoards( $include_public_and_member_boards ) );
-	}
-
 	public function getMyBoardSlugs( $include_public_and_member_boards = false ) {
 		return array_map( function ( WP_Term $board ) {
 			return $board->slug;
 		}, $this->getMyBoards( $include_public_and_member_boards ) );
+	}
+
+	/**
+	 * 공개 게시판과 회원 게시판의 아이디를 리턴한다.
+	 *
+	 * @return array
+	 */
+	public function publicAndMemberBoardIds() {
+		return array_merge( $this->publicBoardIds(), $this->memberBoardIds() );
 	}
 
 	public function publicBoardIds() {
@@ -671,107 +695,94 @@ class MytoryBoard {
 		}
 
 		return $ids;
-    }
-
-	/**
-     * 공개 게시판과 회원 게시판의 아이디를 리턴한다.
-	 * @return array
-	 */
-    public function publicAndMemberBoardIds() {
-	    return array_merge($this->publicBoardIds(), $this->memberBoardIds());
-    }
-
-	private function isBoardPostRequest( \WP_Query & $wp_query_obj ) {
-		if ( $wp_query_obj->get( 'post_type' ) === $this->postTypeKey ) {
-			return true;
-		}
-
-		if ( $wp_query_obj->get( $this->taxonomyKey ) ) {
-
-			// query_var[$this->taxonomyKey]가 설정돼 있는 이 경우는 archive template 페이지가 로드된 경우다.
-			// 근데 이 때 액션을 실행하면 get_the_archive_title()이 이상한 값을 리턴한다.
-			// 그래서 원래의 term slug를 저장해 놨다가 나중에 사용할 용도로 저장한다.
-            // todo 고유주소가 기본인 경우 slug가 아니라 id를 저장하게 된다. 그러면 taxonomy 페이지에서 사용하는 getArchivePageOriginalTermSlug() 메서드에 문제가 생긴다.
-			$this->archivePageOriginalTermSlug = $wp_query_obj->get( $this->taxonomyKey );
-
-			return true;
-		}
 	}
 
 	public function getArchivePageOriginalTermSlug() {
 		return $this->archivePageOriginalTermSlug;
 	}
 
-	public function getStickyPosts( $posts_per_page = -1) {
+	public function getStickyPosts( $posts_per_page = - 1 ) {
 		$sticky_post_ids = get_option( "{$this->taxonomyKey}-sticky-posts" );
 
-		if ($sticky_post_ids) {
+		if ( $sticky_post_ids ) {
 			$wp_query = new \WP_Query( [
 				'post__in'       => $sticky_post_ids,
 				'post_type'      => 'any',
 				'posts_per_page' => $posts_per_page,
 			] );
+
 			return $wp_query->posts;
 		}
+
 		return [];
 	}
 
 	/**
-     * 가입신청 버튼이 필요한지 여부를 가린다.
+	 * 가입신청 버튼이 필요한지 여부를 가린다.
+	 *
 	 * @param $term
 	 *
 	 * @return bool
 	 */
 	public function needRegisterButton( $term ) {
 		if ( ! is_user_logged_in() ) {
-		    // 로그인을 안 한 상태면
+			// 로그인을 안 한 상태면
 			echo 2;
-		    return false;
-        }
+
+			return false;
+		}
 
 		if ( in_array( $term->term_id, $this->getMyBoardIds( true ) ) ) {
-		    // 내가 가입돼 있는 곳이면
+			// 내가 가입돼 있는 곳이면
 			echo 3;
-		    return false;
-        }
+
+			return false;
+		}
 
 		$applied_board_ids = get_user_meta( get_current_user_id(), "_{$this->taxonomyKey}_applied" ) ?: [];
 		if ( in_array( $term->term_id, $applied_board_ids ) ) {
-		    // 이미 가입신청한 곳이면
-		    return false;
-        }
+			// 이미 가입신청한 곳이면
+			return false;
+		}
 
 		return true;
 
-    }
+	}
+
+	public function getMyBoardIds( $include_public_and_member_boards = false ) {
+		return array_map( function ( WP_Term $board ) {
+			return $board->term_id;
+		}, $this->getMyBoards( $include_public_and_member_boards ) );
+	}
 
 	/**
-     * 비공개글 제목을 노출하게 한 경우, 대표 이미지를 노출하지 않게 하기 위한 훅.
+	 * 비공개글 제목을 노출하게 한 경우, 대표 이미지를 노출하지 않게 하기 위한 훅.
+	 *
 	 * @param $null
 	 * @param $object_id
 	 * @param $meta_key
 	 * @param $single
-     *
+	 *
 	 * @return string|null
 	 */
 	public function disableGetThumbnailIdWhenHasNotPermission( $null, $object_id, $meta_key, $single ) {
-	    if (get_post_type($object_id) !== $this->postTypeKey) {
-	        // 현재 Board의 게시물에만 사용한다.
-	        return null;
-        }
+		if ( get_post_type( $object_id ) !== $this->postTypeKey ) {
+			// 현재 Board의 게시물에만 사용한다.
+			return null;
+		}
 
 		if ( $meta_key == '_thumbnail_id' ) {
 			// 특성 이미지를 불러오는 경우에만 사용한다.
 
-            // 공개 게시판의 글이라면 썸네일 불러오기 허용.
+			// 공개 게시판의 글이라면 썸네일 불러오기 허용.
 			$terms = wp_get_post_terms( $object_id, $this->taxonomyKey );
 			foreach ( $terms as $term ) {
 				/**
 				 * @var WP_Term $term
 				 */
-                if (in_array($term->slug, $this->publicBoardSlugs)) {
-                    return null;
-                }
+				if ( in_array( $term->slug, $this->publicBoardSlugs ) ) {
+					return null;
+				}
 			}
 
 			if ( ! is_user_logged_in() ) {
@@ -791,21 +802,30 @@ class MytoryBoard {
 		}
 
 		return null;
-    }
+	}
 
-    public function getPublicBoards()
-    {
-        return new WP_Term_Query([
-            'slug' => $this->publicBoardSlugs,
-        ]);
-    }
+	public function getMemberBoards() {
+		return new WP_Term_Query( [
+			'slug' => $this->memberBoardSlugs,
+		] );
+	}
 
-    public function getMemberBoards()
-    {
-        return new WP_Term_Query([
-            'slug' => $this->memberBoardSlugs,
-        ]);
-    }
+	public function isPublicBoard( $board_id ) {
+	    $public_boards = $this->getPublicBoards()->terms;
+		foreach ( $public_boards as $public_board ) {
+			if ( $board_id === $public_board->term_id ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public function getPublicBoards() {
+		return new WP_Term_Query( [
+			'slug' => $this->publicBoardSlugs,
+		] );
+	}
 }
 
 
