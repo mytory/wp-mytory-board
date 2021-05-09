@@ -142,9 +142,7 @@ class MytoryBoard {
 			add_action( "publish_{$this->postTypeKey}", [ $this, 'defaultMytoryBoard' ] );
 		}
 
-		if ( $this->feed === false ) {
-			add_action( 'pre_get_posts', [ $this, 'disableFeed' ] );
-		}
+        add_action( 'pre_get_posts', [ $this, 'feed' ] );
 
 		new MytoryBoardAdmin( $this );
 	}
@@ -832,10 +830,22 @@ class MytoryBoard {
 		] );
 	}
 
-	public function disableFeed( $query ) {
-		if ( $query->is_feed() && in_array( $this->postTypeKey, (array) $query->get( 'post_type' ) ) ) {
-			die( 'Feed disabled' );
+	public function feed( \WP_Query $wp_query ): \WP_Query {
+		if ( $wp_query->is_feed() && in_array( $this->postTypeKey, (array) $wp_query->get( 'post_type' ) ) ) {
+
+			if ( ! $this->feed ) {
+				die( 'Disabled.' );
+			}
+			$wp_query->set( 'tax_query', [
+				[
+					'taxonomy' => $this->taxonomyKey,
+					'field'    => 'slug',
+					'terms'    => $this->publicBoardSlugs,
+				]
+			] );
 		}
+
+		return $wp_query;
 	}
 }
 
