@@ -241,7 +241,7 @@ class MytoryBoard {
 				'slug'       => $this->postTypeRewriteSlug,
 				'with_front' => false,
 			],
-			'show_ui'      => true,
+			'show_ui'      => current_user_can( 'edit_others_posts' ),
 			'supports'     => [ 'title', 'editor', 'author', 'thumbnail', 'custom-field', 'comments', 'revisions' ],
 			'capabilities' => [
 				'edit_post'              => "edit_{$this->postTypeKey}",
