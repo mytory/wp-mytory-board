@@ -315,6 +315,8 @@ class MytoryBoardAdmin {
 			}
 		}
 
+		$postdata['post_status'] = $this->mytory_board->defaultPostStatus;
+
 		return $postdata;
 	}
 

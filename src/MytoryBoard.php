@@ -72,6 +72,8 @@ class MytoryBoard {
 	public $writePageUrl = '/write';
 	public $writePageSlug = 'write';
 
+	public $defaultPostStatus = 'publish';
+
 	public $feed = false;
 
 	private $archivePageOriginalTermSlug;
@@ -97,6 +99,7 @@ class MytoryBoard {
 	 * @type array   $writeBoardUrl       : 글쓰기 페이지 URL. deprecated. $writePageSlug, writeBoardUrl() 사용할 것.
 	 * @type array   $writeBoardSlug      : 글쓰기 페이지의 슬러그.
 	 * @type array   $feed                : RSS 여부. Default false
+	 * @type array   $defaultPostStatus   : 일반 회원 글쓰기시 기본 post_status
 	 * }
 	 */
 	function __construct( $config = [] ) {
@@ -172,6 +175,7 @@ class MytoryBoard {
 		$this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
 		$this->writePageUrl        = $config['writePageUrl'] ?? $this->writePageUrl;
 		$this->writePageSlug       = $config['writePageSlug'] ?? $this->writePageSlug;
+		$this->defaultPostStatus   = $config['defaultPostStatus'] ?? $this->defaultPostStatus;
 
 		$this->feed = $config['feed'] ?? $this->feed;
 	}
