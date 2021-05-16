@@ -63,7 +63,14 @@ class MytoryBoard {
 	public $postTypeKey = 'mytory_board_post';
 	public $postTypeLabel = '게시글';
 	public $postTypeRewriteSlug = 'b';
+
+	/**
+	 * @var string
+     * @deprecated
+     * $writePageSlug, writePageUrl() 메서드 사용할 것.
+	 */
 	public $writePageUrl = '/write';
+	public $writePageSlug = 'write';
 
 	public $feed = false;
 
@@ -87,6 +94,8 @@ class MytoryBoard {
 	 * @type boolean $roleByBoard         : 게시판별로 권한을 지정할 수 있게 함. Default false
 	 * @type array   $publicBoardSlugs    : roleByBaord가 true인 경우 전체 공개 게시판의 슬러그를 적는다. Default ['public']
 	 * @type array   $memberBoardSlugs    : roleByBaord가 true인 경우 회원 공개 게시판의 슬러그를 적는다. Default ['member']
+	 * @type array   $writeBoardUrl       : 글쓰기 페이지 URL. deprecated. $writePageSlug, writeBoardUrl() 사용할 것.
+	 * @type array   $writeBoardSlug      : 글쓰기 페이지의 슬러그.
 	 * @type array   $feed                : RSS 여부. Default false
 	 * }
 	 */
@@ -162,6 +171,7 @@ class MytoryBoard {
 		$this->postTypeLabel       = $config['postTypeLabel'] ?? $this->postTypeLabel;
 		$this->postTypeRewriteSlug = $config['postTypeRewriteSlug'] ?? $this->postTypeRewriteSlug;
 		$this->writePageUrl        = $config['writePageUrl'] ?? $this->writePageUrl;
+		$this->writePageSlug       = $config['writePageSlug'] ?? $this->writePageSlug;
 
 		$this->feed = $config['feed'] ?? $this->feed;
 	}
@@ -846,6 +856,26 @@ class MytoryBoard {
 		}
 
 		return $wp_query;
+	}
+
+	/**
+     * 글쓰기 페이지 URL을 리턴한다. $post_id 인자값을 넣으면 수정 페이지 URL 리턴.
+	 * @param null $post_id
+	 *
+	 * @return false|string|\WP_Error
+	 */
+	public function writePageUrl( $post_id = null ) {
+		$page = get_page_by_path( $this->writePageSlug );
+		if ( empty( $page ) ) {
+			return '#write-page를-만드세요';
+		}
+		$permalink = get_the_permalink( $page );
+
+		if ( $post_id ) {
+			return add_query_arg( array( 'id' => $post_id ), $permalink );
+		}
+
+		return $permalink;
 	}
 }
 
