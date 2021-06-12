@@ -32,7 +32,7 @@ class MytoryBoardAdmin {
 		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_save", [ $this, 'save' ] );
 
 		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
-		add_action( "wp_ajax_nopriv_{$this->mytory_board->taxonomyKey}_trash", [ $this, 'trash' ] );
+		add_action( "wp_ajax_{$this->mytory_board->taxonomyKey}_publish", [ $this, 'publish' ] );
 
 		add_action( "admin_init", [ $this, 'disableAdminWrite' ] );
 
@@ -365,6 +365,37 @@ class MytoryBoardAdmin {
 				'message' => '시스템 오류로 실패했습니다.',
 			] );
 		}
+
+		die();
+	}
+
+	function publish() {
+
+		if ( ! check_ajax_referer( "{$this->mytory_board->taxonomyKey}-ajax-nonce", false, false ) ) {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '잘못된 호출입니다.',
+			] );
+			die();
+		}
+
+		$has_permission = $this->checkOverallPermission();
+
+		if ( ( ! $has_permission ) or ( ! current_user_can( "edit_others_posts" ) ) ) {
+			echo json_encode( [
+				'result'  => 'fail',
+				'message' => '권한이 없습니다.',
+			] );
+			die();
+		}
+
+
+		wp_publish_post( $_POST['ID'] );
+
+		echo json_encode( [
+			'result'      => 'success',
+			'message'     => '승인했습니다.',
+		] );
 
 		die();
 	}
