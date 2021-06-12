@@ -74,6 +74,12 @@ class MytoryBoard {
 
 	public $defaultPostStatus = 'publish';
 
+	/**
+     * 글 승인 전 관리자 피드백 기능. community_feedback type의 코멘트를 허용한다.
+	 * @var bool
+	 */
+	public $feedbackFeature = false;
+
 	public $feed = false;
 
 	private $archivePageOriginalTermSlug;
@@ -100,6 +106,7 @@ class MytoryBoard {
 	 * @type array   $writeBoardSlug      : 글쓰기 페이지의 슬러그.
 	 * @type array   $feed                : RSS 여부. Default false
 	 * @type array   $defaultPostStatus   : 일반 회원 글쓰기시 기본 post_status
+	 * @type boolean $feedbackFeature     : 커뮤니티 피드백 기능 여부
 	 * }
 	 */
 	function __construct( $config = [] ) {
@@ -124,6 +131,10 @@ class MytoryBoard {
 
 		add_action( "wp_ajax_{$this->taxonomyKey}_dislike", [ $this, 'dislike' ] );
 		add_action( "wp_ajax_nopriv_{$this->taxonomyKey}_dislike", [ $this, 'dislike' ] );
+
+		if ( $this->feedbackFeature ) {
+			add_filter( 'preprocess_comment', [ $this, 'preprocessComment' ] );
+		}
 
 		if ( $this->roleByBoard ) {
 			// 게시판을 만들 때마다 해당 게시판의 권한을 정의하는 role을 만듦.
@@ -176,6 +187,7 @@ class MytoryBoard {
 		$this->writePageUrl        = $config['writePageUrl'] ?? $this->writePageUrl;
 		$this->writePageSlug       = $config['writePageSlug'] ?? $this->writePageSlug;
 		$this->defaultPostStatus   = $config['defaultPostStatus'] ?? $this->defaultPostStatus;
+		$this->feedbackFeature     = $config['feedbackFeature'] ?? $this->feedbackFeature;
 
 		$this->feed = $config['feed'] ?? $this->feed;
 	}
@@ -880,6 +892,14 @@ class MytoryBoard {
 		}
 
 		return $permalink;
+	}
+
+	public function preprocessComment( $comment_data ) {
+		if ( $_POST['is_community_feedback'] ) {
+			$comment_data['comment_type'] = 'community_feedback';
+		}
+
+		return $comment_data;
 	}
 }
 
