@@ -337,6 +337,26 @@ class MytoryBoardAdmin
 
         $postdata['post_status'] = $this->mytory_board->defaultPostStatus;
 
+        if ($this->mytory_board->defaultPostStatus === 'private_on_public') {
+            $is_in_public_board = (!empty(array_intersect($this->mytory_board->publicBoardIds(), $_POST['tax_input'][ $this->mytory_board->taxonomyKey ])));
+            $is_approved        = false;
+
+            if (!empty($_POST['ID'])) {
+                $is_approved = get_post_meta($_POST['ID'], "_{$this->mytory_board->taxonomyKey}_is_approved", true);
+            }
+
+            // 공개글이면서 승인을 받았거나 공개글이 아니라면 publish
+            // 공개글이면서 승인을 받지 않았다면 무조건 private이다.
+
+            if (($is_in_public_board && $is_approved) || (!$is_in_public_board)) {
+                $postdata['post_status'] = 'publish';
+            }
+
+            if ($is_in_public_board && ! $is_approved) {
+                $postdata['post_status'] = 'private';
+            }
+        }
+
         return $postdata;
     }
 
