@@ -432,6 +432,9 @@ class MytoryBoardAdmin
 
         wp_publish_post($_POST['ID']);
 
+        // 승인됨 표시.
+        update_post_meta($_POST['ID'], "_{$this->mytory_board->taxonomyKey}_is_approved", 1);
+
         echo json_encode([
             'result'      => 'success',
             'message'     => '승인했습니다.',
