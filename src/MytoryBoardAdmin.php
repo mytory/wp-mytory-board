@@ -355,6 +355,11 @@ class MytoryBoardAdmin
             if ($is_in_public_board && ! $is_approved) {
                 $postdata['post_status'] = 'private';
             }
+
+            if (current_user_can('edit_others_posts')) {
+                // 관리자면 무조건 공개
+                $postdata['post_status'] = 'publish';
+            }
         }
 
         return $postdata;
