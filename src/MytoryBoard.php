@@ -81,6 +81,12 @@ class MytoryBoard
      */
     public $feedbackFeature = false;
 
+    /**
+     * 글 승인 전 관리자 피드백 기능. community_feedback type의 코멘트를 허용한다.
+     * @var bool
+     */
+    public $disableAdminWrite = false;
+
     public $feed = false;
 
     private $archivePageOriginalTermSlug;
@@ -108,6 +114,7 @@ class MytoryBoard
      * @type array   $feed                : RSS 여부. Default false
      * @type array   $defaultPostStatus   : 일반 회원 글쓰기시 기본 post_status
      * @type boolean $feedbackFeature     : 커뮤니티 피드백 기능 여부
+     * @type boolean $disableAdminWrite   : 관리자 페이지에서 글 수정 못하게 막고, page로 만든 글 수정만 사용 가능하게 하기.
      * }
      */
     public function __construct($config = [])
@@ -190,6 +197,7 @@ class MytoryBoard
         $this->writePageSlug       = $config['writePageSlug'] ?? $this->writePageSlug;
         $this->defaultPostStatus   = $config['defaultPostStatus'] ?? $this->defaultPostStatus;
         $this->feedbackFeature     = $config['feedbackFeature'] ?? $this->feedbackFeature;
+        $this->disableAdminWrite   = $config['disableAdminWrite'] ?? $this->disableAdminWrite;
         
         $this->feed = $config['feed'] ?? $this->feed;
     }

@@ -35,7 +35,9 @@ class MytoryBoardAdmin
         add_action("wp_ajax_{$this->mytory_board->taxonomyKey}_trash", [$this, 'trash']);
         add_action("wp_ajax_{$this->mytory_board->taxonomyKey}_publish", [$this, 'publish']);
 
-        add_action("admin_init", [$this, 'disableAdminWrite']);
+        if ($this->mytory_board->disableAdminWrite) {
+            add_action("admin_init", [$this, 'disableAdminWrite']);
+        }
 
         if ($this->mytory_board->roleByBoard and current_user_can('edit_users')) {
             add_action('edit_user_profile', [$this, 'additionalRoleForm'], 10, 1);
