@@ -702,9 +702,17 @@ class MytoryBoard
             }
 
             if ($include_public_and_member_boards) {
-                foreach (array_merge($this->publicBoardSlugs, $this->memberBoardSlugs) as $slug) {
+                foreach (array_merge($this->publicBoardSlugs) as $slug) {
                     if ($term = get_term_by('slug', $slug, $this->taxonomyKey)) {
                         $boards[] = $term;
+                    }
+                }
+
+                if (is_user_logged_in()) {
+                    foreach (array_merge($this->memberBoardSlugs) as $slug) {
+                        if ($term = get_term_by('slug', $slug, $this->taxonomyKey)) {
+                            $boards[] = $term;
+                        }
                     }
                 }
             }
