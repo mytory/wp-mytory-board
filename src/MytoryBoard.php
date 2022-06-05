@@ -387,6 +387,7 @@ class MytoryBoard
 
     /**
      * 워드프레스의 기본 권한 모델로는 저장할 때 글을 특정 board에만 넣게 할 수가 없다.
+     * todo taxonomy 별로 기본 term 을 설정할 수 있으므로 그 기능을 사용하도록 한다.
      * 그래서 hook을 걸게 했다.
      *
      * @param          $post_id
@@ -397,6 +398,11 @@ class MytoryBoard
     {
         if (! empty($_POST['tax_input'][ $this->taxonomyKey ])) {
             // 게시판 값이 입력돼 들어오면 그냥 넘긴다.
+            return;
+        }
+
+        if (! empty($_GET['tax_input'])) {
+            // 게시판 값이 URL로 주어져 있다면 그냥 넘긴다.
             return;
         }
 
