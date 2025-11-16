@@ -797,7 +797,28 @@ class MytoryBoard
         return [];
     }
 
-    /**
+	public function getStickyPostsQuery($posts_per_page = - 1)
+	{
+		$sticky_post_ids = get_option("{$this->taxonomyKey}-sticky-posts");
+
+		if ($sticky_post_ids) {
+			$wp_query = new \WP_Query([
+				'post__in'       => $sticky_post_ids,
+				'post_type'      => 'any',
+				'posts_per_page' => $posts_per_page,
+			]);
+
+			return $wp_query;
+		}
+
+		return new \WP_Query([
+			'post__in'       => [-1],
+			'post_type'      => 'any',
+			'posts_per_page' => $posts_per_page,
+		]);
+	}
+
+	/**
      * 가입신청 버튼이 필요한지 여부를 가린다.
      *
      * @param $term

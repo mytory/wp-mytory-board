@@ -241,7 +241,12 @@ class MytoryBoardAdmin
                 die();
             }
 
-            $post_id = wp_update_post($postarr, true);
+	        $post = get_post($postarr['ID']);
+	        foreach ( $postarr as $k => $v ) {
+		        $post->{$k} = $v;
+	        }
+
+	        $post_id = wp_update_post($post, true, false);
         } else {
             $post_id = wp_insert_post($postarr, true);
         }
